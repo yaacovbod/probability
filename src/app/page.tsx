@@ -2,9 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
-import { calculateProbability } from '@/lib/calculator'
-import { localStorageAdapter } from '@/lib/storage'
+import { StudentFullData } from '@/lib/types'
 import { DashboardKPI } from '@/components/DashboardKPI'
 import { StudentTable } from '@/components/StudentTable'
 import { Button } from '@/components/ui/button'
@@ -23,49 +21,12 @@ export default function DashboardPage() {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [students, bagrutScores, schoolGrades] = await Promise.all([
-        localStorageAdapter.getStudents(),
-        localStorageAdapter.getBagrutScores(),
-        localStorageAdapter.getSchoolGrades(),
-      ])
-
-      if (students.length === 0) {
-        setData([])
-        setLoading(false)
-        return
-      }
-
-      const bagrutMap = new Map<string, BagrutScores>(bagrutScores.map((b: BagrutScores) => [b.studentId, b]))
-      const schoolMap = new Map<string, SchoolGrades>(schoolGrades.map((s: SchoolGrades) => [s.studentId, s]))
-
-      const emptyBagrut = (id: string): BagrutScores => ({
-        studentId: id,
-        math_35173: null, math_35371: null, math_35372: null,
-        math_35471: null, math_35472: null, math_35571: null, math_35572: null,
-        lashon_exam: null, lashon_school: null,
-        history_online: null, history_exam: null, history_school: null,
-        tanach_online: null, tanach_exam: null, tanach_school: null,
-        civics_online: null, civics_exam: null, civics_school: null,
-        literature_online: null, literature_exam: null, literature_school: null,
-        eng_A: null, eng_B: null, eng_C: null, eng_D: null,
-        eng_E: null, eng_F: null, eng_G: null, eng_boost: null, eng_final: null,
-        major_bio: null, major_motal: null, major_languages: null, major_other: null,
-      })
-
-      const emptySchool = (id: string): SchoolGrades => ({
-        studentId: id,
-        civics: null, english: null, history: null, hebrew: null,
-        math: null, bible: null, literature: null, pe: null,
-      })
-
-      const computed: StudentFullData[] = students.map((student: Student) => {
-        const bagrut = bagrutMap.get(student.id) ?? emptyBagrut(student.id)
-        const school = schoolMap.get(student.id) ?? emptySchool(student.id)
-        const result = calculateProbability(student, bagrut, school)
-        return { student, bagrut, school, result }
-      })
-
+      const res = await fetch('/api/data')
+      if (!res.ok) throw new Error('שגיאה בטעינת נתונים')
+      const computed: StudentFullData[] = await res.json()
       setData(computed)
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }

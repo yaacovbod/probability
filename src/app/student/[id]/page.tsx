@@ -1,9 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
-import { calculateProbability } from '@/lib/calculator'
-import { localStorageAdapter } from '@/lib/storage'
+import { StudentFullData } from '@/lib/types'
 import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,19 +23,11 @@ export default function StudentPage() {
 
   useEffect(() => {
     async function load() {
-      const [students, bagrutScores, schoolGrades] = await Promise.all([
-        localStorageAdapter.getStudents(),
-        localStorageAdapter.getBagrutScores(),
-        localStorageAdapter.getSchoolGrades(),
-      ])
-
-      const student = students.find((s: Student) => s.id === id)
-      if (!student) { setLoading(false); return }
-
-      const bagrut = bagrutScores.find((b: BagrutScores) => b.studentId === id) ?? emptyBagrut(id)
-      const school = schoolGrades.find((s: SchoolGrades) => s.studentId === id) ?? emptySchool(id)
-      const result = calculateProbability(student, bagrut, school)
-      setFullData({ student, bagrut, school, result })
+      const res = await fetch('/api/data')
+      if (!res.ok) { setLoading(false); return }
+      const all: StudentFullData[] = await res.json()
+      const found = all.find(d => d.student.id === id) ?? null
+      setFullData(found)
       setLoading(false)
     }
     load()
@@ -181,26 +171,3 @@ export default function StudentPage() {
   )
 }
 
-function emptyBagrut(id: string): BagrutScores {
-  return {
-    studentId: id,
-    math_35173: null, math_35371: null, math_35372: null,
-    math_35471: null, math_35472: null, math_35571: null, math_35572: null,
-    lashon_exam: null, lashon_school: null,
-    history_online: null, history_exam: null, history_school: null,
-    tanach_online: null, tanach_exam: null, tanach_school: null,
-    civics_online: null, civics_exam: null, civics_school: null,
-    literature_online: null, literature_exam: null, literature_school: null,
-    eng_A: null, eng_B: null, eng_C: null, eng_D: null,
-    eng_E: null, eng_F: null, eng_G: null, eng_boost: null, eng_final: null,
-    major_bio: null, major_motal: null, major_languages: null, major_other: null,
-  }
-}
-
-function emptySchool(id: string): SchoolGrades {
-  return {
-    studentId: id,
-    civics: null, english: null, history: null, hebrew: null,
-    math: null, bible: null, literature: null, pe: null,
-  }
-}
