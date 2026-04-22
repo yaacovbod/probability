@@ -46,14 +46,16 @@ export function calcCohortFlags(allScores: BagrutScores[]): CohortFlags {
 export function probLashon(
   exam: number | null,
   student: Student,
-  cohortDone: boolean
+  cohortDone: boolean,
+  schoolGrade: number | null = null
 ): number | null {
   if (!exam || exam === 0) {
     if (student.isLateJoinerLashon) return null
     if (student.isSpecialEd) return GUARANTEED.specialEdLashon
     return cohortDone ? 0 : null
   }
-  const final = exam * 0.70 + GUARANTEED.internalGrade * 0.30
+  const internal = schoolGrade ?? GUARANTEED.internalGrade
+  const final = exam * 0.70 + internal * 0.30
   if (final >= 60) return 100
   if (final >= 55) return 95
   if (final >= 52) return 70
@@ -65,14 +67,17 @@ export function probLashon(
 export function probSpirit(
   exam: number | null,
   isSpecialEd: boolean,
-  cohortDone: boolean
+  cohortDone: boolean,
+  schoolGrade: number | null = null,
+  onlineGrade: number | null = null
 ): number | null {
   if (!exam || exam === 0) {
     if (isSpecialEd) return null
     return cohortDone ? 0 : null
   }
-  const guaranteed = GUARANTEED.onlineTasks * 0.35 + GUARANTEED.internalGrade * 0.30
-  const final = exam * 0.35 + guaranteed
+  const internal = schoolGrade ?? GUARANTEED.internalGrade
+  const online = onlineGrade ?? GUARANTEED.onlineTasks
+  const final = exam * 0.35 + online * 0.35 + internal * 0.30
   if (final >= 60) return 100
   if (final >= 55) return 98
   if (final >= 52) return 80
@@ -80,13 +85,19 @@ export function probSpirit(
   return 30
 }
 
-export function probHistory(exam: number | null, isSpecialEd: boolean, cohortDone: boolean): number | null {
+export function probHistory(
+  exam: number | null,
+  isSpecialEd: boolean,
+  cohortDone: boolean,
+  schoolGrade: number | null = null,
+  onlineGrade: number | null = null
+): number | null {
   if (!exam || exam === 0) {
     if (isSpecialEd) return null
     return cohortDone ? 0 : null
   }
   if (isSpecialEd) return null
-  return probSpirit(exam, false, true)
+  return probSpirit(exam, false, true, schoolGrade, onlineGrade)
 }
 
 export function probEnglish(
@@ -190,11 +201,11 @@ function calcS1(
   flags: CohortFlags
 ): { s1: number; subjectProbs: ProbabilityResult['subjectProbs'] } {
   const sp: ProbabilityResult['subjectProbs'] = {
-    lashon: probLashon(scores.lashon_exam, student, flags.lashon),
-    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, flags.tanach),
-    history: probHistory(scores.history_exam, student.isSpecialEd, flags.history),
-    civics: probSpirit(scores.civics_exam, student.isSpecialEd, flags.civics),
-    literature: probSpirit(scores.literature_exam, student.isSpecialEd, flags.literature),
+    lashon: probLashon(scores.lashon_exam, student, flags.lashon, scores.lashon_school),
+    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, flags.tanach, scores.tanach_school, scores.tanach_online),
+    history: probHistory(scores.history_exam, student.isSpecialEd, flags.history, scores.history_school, scores.history_online),
+    civics: probSpirit(scores.civics_exam, student.isSpecialEd, flags.civics, scores.civics_school, scores.civics_online),
+    literature: probSpirit(scores.literature_exam, student.isSpecialEd, flags.literature, scores.literature_school, scores.literature_online),
     english: probEnglish(scores.eng_final, flags.english, grades.english),
     math: probMath(scores, grades.math),
     major: probMajor(scores),
@@ -228,9 +239,24 @@ function calcS1(
   return { s1, subjectProbs: sp }
 }
 
-function calcS2(grades: SchoolGrades): number {
-  const core = [grades.math, grades.english, grades.hebrew, grades.history, grades.bible, grades.civics]
-  const valid = core.filter((g): g is number => g !== null)
+function hasMathExam(scores: BagrutScores): boolean {
+  return (
+    scores.math_35371 !== null || scores.math_35372 !== null ||
+    scores.math_35471 !== null || scores.math_35472 !== null ||
+    scores.math_35571 !== null || scores.math_35572 !== null
+  )
+}
+
+function calcS2(grades: SchoolGrades, scores: BagrutScores): number {
+  const subjectGrades: (number | null)[] = [
+    grades.hebrew,
+    hasMathExam(scores) ? null : grades.math,
+    scores.eng_final ? null : grades.english,
+    scores.history_exam ? null : grades.history,
+    scores.tanach_exam ? null : grades.bible,
+    scores.civics_exam ? null : grades.civics,
+  ]
+  const valid = subjectGrades.filter((g): g is number => g !== null)
   if (valid.length === 0) return 50
   const avg = valid.reduce((a, b) => a + b, 0) / valid.length
   if (avg >= 75) return 90
@@ -272,7 +298,7 @@ export function calculateProbability(
   cohortFlags: CohortFlags
 ): ProbabilityResult {
   const { s1, subjectProbs } = calcS1(student, scores, grades, cohortFlags)
-  const s2 = calcS2(grades)
+  const s2 = calcS2(grades, scores)
   const s3 = calcS3(student, scores)
   const s4 = calcS4(student.attendanceAbsencePct)
 
