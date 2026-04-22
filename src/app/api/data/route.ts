@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { fetchSheetsData } from '@/lib/sheets'
 import { calculateProbability } from '@/lib/calculator'
