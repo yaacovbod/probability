@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
-import { calculateProbability, calcCohortFlags } from '@/lib/calculator'
+import { calculateProbability } from '@/lib/calculator'
 import { localStorageAdapter } from '@/lib/storage'
 import { DashboardKPI } from '@/components/DashboardKPI'
 import { StudentTable } from '@/components/StudentTable'
@@ -58,11 +58,10 @@ export default function DashboardPage() {
         math: null, bible: null, literature: null, pe: null,
       })
 
-      const cohortFlags = calcCohortFlags(bagrutScores)
       const computed: StudentFullData[] = students.map((student: Student) => {
         const bagrut = bagrutMap.get(student.id) ?? emptyBagrut(student.id)
         const school = schoolMap.get(student.id) ?? emptySchool(student.id)
-        const result = calculateProbability(student, bagrut, school, cohortFlags)
+        const result = calculateProbability(student, bagrut, school)
         return { student, bagrut, school, result }
       })
 

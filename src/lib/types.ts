@@ -92,11 +92,3 @@ export type StudentFullData = {
   result: ProbabilityResult
 }
 
-export type CohortFlags = {
-  lashon: boolean
-  tanach: boolean
-  history: boolean
-  civics: boolean
-  literature: boolean
-  english: boolean
-}

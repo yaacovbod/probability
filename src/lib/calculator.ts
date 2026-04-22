@@ -1,4 +1,4 @@
-import { Student, BagrutScores, SchoolGrades, ProbabilityResult, RiskLevel, CohortFlags } from './types'
+import { Student, BagrutScores, SchoolGrades, ProbabilityResult, RiskLevel } from './types'
 
 const WEIGHTS = {
   bagrutDone: 0.55,
@@ -25,34 +25,17 @@ const RISK_THRESHOLDS = {
   high: 45,
 } as const
 
-export function isCohortDone(field: keyof BagrutScores, allScores: BagrutScores[]): boolean {
-  const n = allScores.length
-  if (n === 0) return false
-  const count = allScores.filter(s => s[field] !== null && s[field] !== 0).length
-  return count / n >= 0.50
-}
-
-export function calcCohortFlags(allScores: BagrutScores[]): CohortFlags {
-  return {
-    lashon: isCohortDone('lashon_exam', allScores),
-    tanach: isCohortDone('tanach_exam', allScores),
-    history: isCohortDone('history_exam', allScores),
-    civics: isCohortDone('civics_exam', allScores),
-    literature: isCohortDone('literature_exam', allScores),
-    english: isCohortDone('eng_final', allScores),
-  }
-}
 
 export function probLashon(
   exam: number | null,
   student: Student,
-  cohortDone: boolean,
   schoolGrade: number | null = null
 ): number | null {
-  if (!exam || exam === 0) {
+  if (exam === null) return null
+  if (exam === 0) {
     if (student.isLateJoinerLashon) return null
     if (student.isSpecialEd) return GUARANTEED.specialEdLashon
-    return cohortDone ? 0 : null
+    return 0
   }
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const final = exam * 0.70 + internal * 0.30
@@ -67,13 +50,13 @@ export function probLashon(
 export function probSpirit(
   exam: number | null,
   isSpecialEd: boolean,
-  cohortDone: boolean,
   schoolGrade: number | null = null,
   onlineGrade: number | null = null
 ): number | null {
-  if (!exam || exam === 0) {
+  if (exam === null) return null
+  if (exam === 0) {
     if (isSpecialEd) return null
-    return cohortDone ? 0 : null
+    return 0
   }
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const online = onlineGrade ?? GUARANTEED.onlineTasks
@@ -88,32 +71,31 @@ export function probSpirit(
 export function probHistory(
   exam: number | null,
   isSpecialEd: boolean,
-  cohortDone: boolean,
   schoolGrade: number | null = null,
   onlineGrade: number | null = null
 ): number | null {
-  if (!exam || exam === 0) {
+  if (exam === null) return null
+  if (exam === 0) {
     if (isSpecialEd) return null
-    return cohortDone ? 0 : null
+    return 0
   }
   if (isSpecialEd) return null
-  return probSpirit(exam, false, true, schoolGrade, onlineGrade)
+  return probSpirit(exam, false, schoolGrade, onlineGrade)
 }
 
 export function probEnglish(
   engFinal: number | null,
-  cohortDone: boolean,
   schoolEnglish: number | null
 ): number | null {
-  if (!engFinal || engFinal === 0) {
-    if (cohortDone) return 0
-    if (schoolEnglish === null) return 60
+  if (engFinal === null) {
+    if (schoolEnglish === null) return null
     if (schoolEnglish >= 85) return 90
     if (schoolEnglish >= 75) return 80
     if (schoolEnglish >= 65) return 65
     if (schoolEnglish >= 55) return 50
     return 30
   }
+  if (engFinal === 0) return 0
   if (engFinal >= 70) return 100
   if (engFinal >= 60) return 95
   if (engFinal >= 55) return 85
@@ -197,16 +179,15 @@ export function probMajor(scores: BagrutScores): number | null {
 function calcS1(
   student: Student,
   scores: BagrutScores,
-  grades: SchoolGrades,
-  flags: CohortFlags
+  grades: SchoolGrades
 ): { s1: number; subjectProbs: ProbabilityResult['subjectProbs'] } {
   const sp: ProbabilityResult['subjectProbs'] = {
-    lashon: probLashon(scores.lashon_exam, student, flags.lashon, scores.lashon_school),
-    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, flags.tanach, scores.tanach_school, scores.tanach_online),
-    history: probHistory(scores.history_exam, student.isSpecialEd, flags.history, scores.history_school, scores.history_online),
-    civics: probSpirit(scores.civics_exam, student.isSpecialEd, flags.civics, scores.civics_school, scores.civics_online),
-    literature: probSpirit(scores.literature_exam, student.isSpecialEd, flags.literature, scores.literature_school, scores.literature_online),
-    english: probEnglish(scores.eng_final, flags.english, grades.english),
+    lashon: probLashon(scores.lashon_exam, student, scores.lashon_school),
+    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, scores.tanach_school, scores.tanach_online),
+    history: probHistory(scores.history_exam, student.isSpecialEd, scores.history_school, scores.history_online),
+    civics: probSpirit(scores.civics_exam, student.isSpecialEd, scores.civics_school, scores.civics_online),
+    literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online),
+    english: probEnglish(scores.eng_final, grades.english),
     math: probMath(scores, grades.math),
     major: probMajor(scores),
   }
@@ -294,10 +275,9 @@ function calcS4(absencePct: number | null): number {
 export function calculateProbability(
   student: Student,
   scores: BagrutScores,
-  grades: SchoolGrades,
-  cohortFlags: CohortFlags
+  grades: SchoolGrades
 ): ProbabilityResult {
-  const { s1, subjectProbs } = calcS1(student, scores, grades, cohortFlags)
+  const { s1, subjectProbs } = calcS1(student, scores, grades)
   const s2 = calcS2(grades, scores)
   const s3 = calcS3(student, scores)
   const s4 = calcS4(student.attendanceAbsencePct)

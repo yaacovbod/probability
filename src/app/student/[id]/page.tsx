@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
-import { calculateProbability, calcCohortFlags } from '@/lib/calculator'
+import { calculateProbability } from '@/lib/calculator'
 import { localStorageAdapter } from '@/lib/storage'
 import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
@@ -36,8 +36,7 @@ export default function StudentPage() {
 
       const bagrut = bagrutScores.find((b: BagrutScores) => b.studentId === id) ?? emptyBagrut(id)
       const school = schoolGrades.find((s: SchoolGrades) => s.studentId === id) ?? emptySchool(id)
-      const cohortFlags = calcCohortFlags(bagrutScores)
-      const result = calculateProbability(student, bagrut, school, cohortFlags)
+      const result = calculateProbability(student, bagrut, school)
       setFullData({ student, bagrut, school, result })
       setLoading(false)
     }
