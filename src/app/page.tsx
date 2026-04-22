@@ -1,0 +1,156 @@
+'use client'
+import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { Student, BagrutScores, SchoolGrades, StudentFullData, DEFAULT_SETTINGS } from '@/lib/types'
+import { calculateProbability } from '@/lib/calculator'
+import { localStorageAdapter } from '@/lib/storage'
+import { DashboardKPI } from '@/components/DashboardKPI'
+import { StudentTable } from '@/components/StudentTable'
+import { Button } from '@/components/ui/button'
+
+const RISK_COLORS: Record<string, string> = {
+  'נמוך': '#22c55e',
+  'בינוני': '#eab308',
+  'גבוה': '#f97316',
+  'גבוה מאוד': '#ef4444',
+}
+
+export default function DashboardPage() {
+  const [data, setData] = useState<StudentFullData[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [students, bagrutScores, schoolGrades] = await Promise.all([
+        localStorageAdapter.getStudents(),
+        localStorageAdapter.getBagrutScores(),
+        localStorageAdapter.getSchoolGrades(),
+      ])
+
+      if (students.length === 0) {
+        setData([])
+        setLoading(false)
+        return
+      }
+
+      const bagrutMap = new Map<string, BagrutScores>(bagrutScores.map((b: BagrutScores) => [b.studentId, b]))
+      const schoolMap = new Map<string, SchoolGrades>(schoolGrades.map((s: SchoolGrades) => [s.studentId, s]))
+
+      const emptyBagrut = (id: string): BagrutScores => ({
+        studentId: id,
+        math_35173: null, math_35371: null, math_35372: null,
+        math_35471: null, math_35472: null, math_35571: null, math_35572: null,
+        lashon_exam: null, lashon_school: null,
+        history_online: null, history_exam: null, history_school: null,
+        tanach_online: null, tanach_exam: null, tanach_school: null,
+        civics_online: null, civics_exam: null, civics_school: null,
+        literature_online: null, literature_exam: null, literature_school: null,
+        eng_A: null, eng_B: null, eng_C: null, eng_D: null,
+        eng_E: null, eng_F: null, eng_G: null, eng_boost: null, eng_final: null,
+        major_bio: null, major_motal: null, major_languages: null, major_other: null,
+      })
+
+      const emptySchool = (id: string): SchoolGrades => ({
+        studentId: id,
+        civics: null, english: null, history: null, hebrew: null,
+        math: null, bible: null, literature: null, pe: null,
+      })
+
+      const computed: StudentFullData[] = students.map((student: Student) => {
+        const bagrut = bagrutMap.get(student.id) ?? emptyBagrut(student.id)
+        const school = schoolMap.get(student.id) ?? emptySchool(student.id)
+        const result = calculateProbability(student, bagrut, school, bagrutScores, DEFAULT_SETTINGS)
+        return { student, bagrut, school, result }
+      })
+
+      setData(computed)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { loadData() }, [loadData])
+
+  const riskDist = ['נמוך', 'בינוני', 'גבוה', 'גבוה מאוד'].map(risk => ({
+    name: risk,
+    value: data.filter(d => d.result.risk === risk).length,
+  })).filter(r => r.value > 0)
+
+  const histogram = Array.from({ length: 10 }, (_, i) => {
+    const low = i * 10
+    const high = low + 10
+    return {
+      range: `${low}–${high}`,
+      count: data.filter(d => d.result.score >= low && d.result.score < high).length,
+    }
+  })
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" dir="rtl">
+        <p className="text-gray-500 text-lg">טוען נתונים...</p>
+      </div>
+    )
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6" dir="rtl">
+        <h1 className="text-2xl font-bold text-gray-700">אין נתונים</h1>
+        <p className="text-gray-500">יש להעלות קובץ Excel כדי להתחיל</p>
+        <Link href="/upload">
+          <Button>העלאת Excel</Button>
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <main dir="rtl" className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">דשבורד בגרות — שכבת יא׳</h1>
+          <p className="text-gray-500 mt-1">נעימת הלב, חריש</p>
+        </div>
+        <Link href="/upload"><Button variant="outline">עדכון Excel</Button></Link>
+      </div>
+
+      <DashboardKPI data={data} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-xl border bg-white p-4">
+          <h2 className="font-semibold mb-4 text-gray-700">התפלגות רמות סיכון</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={riskDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`}>
+                {riskDist.map(entry => (
+                  <Cell key={entry.name} fill={RISK_COLORS[entry.name]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-xl border bg-white p-4">
+          <h2 className="font-semibold mb-4 text-gray-700">התפלגות ציוני סיכוי</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={histogram}>
+              <XAxis dataKey="range" fontSize={11} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" name="תלמידים" fill="#0891B2" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-white p-4">
+        <h2 className="font-semibold mb-4 text-gray-700">כל התלמידים</h2>
+        <StudentTable data={data} />
+      </div>
+    </main>
+  )
+}
