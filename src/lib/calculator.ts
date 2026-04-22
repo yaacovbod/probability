@@ -36,7 +36,7 @@ export function calcCohortFlags(allScores: BagrutScores[]): CohortFlags {
   return {
     lashon: isCohortDone('lashon_exam', allScores),
     tanach: isCohortDone('tanach_exam', allScores),
-    history: false,
+    history: isCohortDone('history_exam', allScores),
     civics: isCohortDone('civics_exam', allScores),
     literature: isCohortDone('literature_exam', allScores),
     english: isCohortDone('eng_final', allScores),
@@ -80,8 +80,11 @@ export function probSpirit(
   return 30
 }
 
-export function probHistory(exam: number | null, isSpecialEd: boolean): number | null {
-  if (!exam || exam === 0) return null
+export function probHistory(exam: number | null, isSpecialEd: boolean, cohortDone: boolean): number | null {
+  if (!exam || exam === 0) {
+    if (isSpecialEd) return null
+    return cohortDone ? 0 : null
+  }
   if (isSpecialEd) return null
   return probSpirit(exam, false, true)
 }
@@ -189,7 +192,7 @@ function calcS1(
   const sp: ProbabilityResult['subjectProbs'] = {
     lashon: probLashon(scores.lashon_exam, student, flags.lashon),
     tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, flags.tanach),
-    history: probHistory(scores.history_exam, student.isSpecialEd),
+    history: probHistory(scores.history_exam, student.isSpecialEd, flags.history),
     civics: probSpirit(scores.civics_exam, student.isSpecialEd, flags.civics),
     literature: probSpirit(scores.literature_exam, student.isSpecialEd, flags.literature),
     english: probEnglish(scores.eng_final, flags.english, grades.english),
