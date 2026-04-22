@@ -2,8 +2,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { Student, BagrutScores, SchoolGrades, StudentFullData, DEFAULT_SETTINGS } from '@/lib/types'
-import { calculateProbability } from '@/lib/calculator'
+import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
+import { calculateProbability, calcCohortFlags } from '@/lib/calculator'
 import { localStorageAdapter } from '@/lib/storage'
 import { DashboardKPI } from '@/components/DashboardKPI'
 import { StudentTable } from '@/components/StudentTable'
@@ -58,10 +58,11 @@ export default function DashboardPage() {
         math: null, bible: null, literature: null, pe: null,
       })
 
+      const cohortFlags = calcCohortFlags(bagrutScores)
       const computed: StudentFullData[] = students.map((student: Student) => {
         const bagrut = bagrutMap.get(student.id) ?? emptyBagrut(student.id)
         const school = schoolMap.get(student.id) ?? emptySchool(student.id)
-        const result = calculateProbability(student, bagrut, school, bagrutScores, DEFAULT_SETTINGS)
+        const result = calculateProbability(student, bagrut, school, cohortFlags)
         return { student, bagrut, school, result }
       })
 
@@ -122,16 +123,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="rounded-xl border bg-white p-4">
           <h2 className="font-semibold mb-4 text-gray-700">התפלגות רמות סיכון</h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={riskDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`}>
-                {riskDist.map(entry => (
-                  <Cell key={entry.name} fill={RISK_COLORS[entry.name]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex items-center gap-4">
+            <ResponsiveContainer width="60%" height={200}>
+              <PieChart>
+                <Pie data={riskDist} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}>
+                  {riskDist.map(entry => (
+                    <Cell key={entry.name} fill={RISK_COLORS[entry.name]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => [`${value} תלמידים`, '']} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-col gap-2 text-sm">
+              {['נמוך', 'בינוני', 'גבוה', 'גבוה מאוד'].map(risk => {
+                const count = data.filter(d => d.result.risk === risk).length
+                if (count === 0) return null
+                return (
+                  <div key={risk} className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ background: RISK_COLORS[risk] }} />
+                    <span className="text-gray-600">{risk}</span>
+                    <span className="font-bold text-gray-800 mr-1">{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="rounded-xl border bg-white p-4">

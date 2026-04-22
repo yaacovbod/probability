@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Student, BagrutScores, SchoolGrades, StudentFullData, DEFAULT_SETTINGS } from '@/lib/types'
-import { calculateProbability } from '@/lib/calculator'
+import { Student, BagrutScores, SchoolGrades, StudentFullData } from '@/lib/types'
+import { calculateProbability, calcCohortFlags } from '@/lib/calculator'
 import { localStorageAdapter } from '@/lib/storage'
 import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
@@ -36,7 +36,8 @@ export default function StudentPage() {
 
       const bagrut = bagrutScores.find((b: BagrutScores) => b.studentId === id) ?? emptyBagrut(id)
       const school = schoolGrades.find((s: SchoolGrades) => s.studentId === id) ?? emptySchool(id)
-      const result = calculateProbability(student, bagrut, school, bagrutScores, DEFAULT_SETTINGS)
+      const cohortFlags = calcCohortFlags(bagrutScores)
+      const result = calculateProbability(student, bagrut, school, cohortFlags)
       setFullData({ student, bagrut, school, result })
       setLoading(false)
     }
@@ -57,7 +58,19 @@ export default function StudentPage() {
     { label: 'נוכחות', value: result.breakdown.attendance, weight: '20%' },
   ]
 
-  const subjects = Object.entries(result.subjectProbs)
+  const SUBJECT_LABELS: Record<string, string> = {
+    lashon: 'לשון',
+    tanach: 'תנ"ך',
+    history: 'היסטוריה',
+    civics: 'אזרחות',
+    literature: 'ספרות',
+    english: 'אנגלית',
+    math: 'מתמטיקה',
+    major: 'מגמה',
+  }
+  const subjects = (Object.entries(result.subjectProbs) as [string, number | null][])
+    .filter(([, v]) => v !== null)
+    .map(([k, v]) => ({ name: SUBJECT_LABELS[k] ?? k, prob: v as number }))
 
   const schoolSubjects: { label: string; value: number | null }[] = [
     { label: 'מתמטיקה', value: school.math },
@@ -106,23 +119,21 @@ export default function StudentPage() {
         <Card>
           <CardHeader><CardTitle className="text-base">סיכויי מקצועות</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {subjects.map(([name, prob]) => {
-              const p = prob ?? 0
-              return (
-              <div key={name} className="flex items-center gap-3">
-                <span className="w-24 text-sm text-right shrink-0">{name}</span>
-                <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+            {subjects.map(({ name, prob: p }) => (
+              <div key={name} className="flex items-center gap-2">
+                <span className="w-24 text-sm text-right shrink-0 text-gray-700">{name}</span>
+                <div className="flex-1 h-4 bg-gray-100 rounded-sm overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${p >= 80 ? 'bg-green-500' : p >= 60 ? 'bg-yellow-400' : p >= 40 ? 'bg-orange-400' : 'bg-red-500'}`}
+                    className={`h-full transition-all ${p >= 80 ? 'bg-green-500' : p >= 60 ? 'bg-yellow-400' : p >= 40 ? 'bg-orange-400' : 'bg-red-500'}`}
                     style={{ width: `${p}%` }}
                   />
                 </div>
-                <span className={`w-12 text-sm font-bold text-left shrink-0 ${p >= 80 ? 'text-green-600' : p >= 60 ? 'text-yellow-600' : p >= 40 ? 'text-orange-500' : 'text-red-600'}`}>
+                <span className={`w-10 text-sm font-bold text-left shrink-0 ${p >= 80 ? 'text-green-600' : p >= 60 ? 'text-yellow-600' : p >= 40 ? 'text-orange-500' : 'text-red-600'}`}>
                   {p}%
                 </span>
-                <span className="text-xs text-gray-400">{p >= 60 ? 'עובר' : 'בסיכון'}</span>
+                <span className={`text-xs w-10 shrink-0 ${p >= 60 ? 'text-green-600' : 'text-red-500'}`}>{p >= 60 ? 'עובר' : 'בסיכון'}</span>
               </div>
-            )})}
+            ))}
           </CardContent>
         </Card>
       )}
@@ -160,21 +171,6 @@ export default function StudentPage() {
         </Card>
       </div>
 
-      {result.recommendations.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader><CardTitle className="text-base text-orange-800">המלצות</CardTitle></CardHeader>
-          <CardContent>
-            <ul className="space-y-1">
-              {result.recommendations.map(r => (
-                <li key={r} className="text-sm text-orange-700 flex items-start gap-2">
-                  <span>⚠</span>
-                  <span>{r}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
 
       {student.notes && (
         <Card>

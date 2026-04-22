@@ -60,65 +60,29 @@ export type SchoolGrades = {
   pe: number | null
 }
 
-export type Settings = {
-  weights: {
-    bagrutDone: number
-    schoolGrades: number
-    mathEnglishLevel: number
-    attendance: number
-  }
-  bagrutSubWeights: {
-    lashon: number
-    tanach: number
-    other: number
-  }
-  guaranteedInternalGrade: number
-  guaranteedOnlineTasksGrade: number
-  specialEdLashonNoExam: number
-  riskThresholds: {
-    veryHigh: number
-    high: number
-    medium: number
-    low: number
-  }
-}
-
-export const DEFAULT_SETTINGS: Settings = {
-  weights: {
-    bagrutDone: 0.55,
-    schoolGrades: 0.15,
-    mathEnglishLevel: 0.10,
-    attendance: 0.20,
-  },
-  bagrutSubWeights: {
-    lashon: 0.50,
-    tanach: 0.30,
-    other: 0.20,
-  },
-  guaranteedInternalGrade: 85,
-  guaranteedOnlineTasksGrade: 70,
-  specialEdLashonNoExam: 80,
-  riskThresholds: {
-    veryHigh: 0,
-    high: 45,
-    medium: 65,
-    low: 80,
-  },
-}
-
 export type RiskLevel = 'גבוה מאוד' | 'גבוה' | 'בינוני' | 'נמוך'
+
+export type SubjectProbs = {
+  lashon: number | null
+  tanach: number | null
+  history: number | null
+  civics: number | null
+  literature: number | null
+  english: number | null
+  math: number | null
+  major: number | null
+}
 
 export type ProbabilityResult = {
   score: number
   risk: RiskLevel
-  subjectProbs: Partial<Record<string, number>>
+  subjectProbs: SubjectProbs
   breakdown: {
     bagrutDone: number
     schoolGrades: number
     mathEnglishLevel: number
     attendance: number
   }
-  recommendations: string[]
 }
 
 export type StudentFullData = {
@@ -126,4 +90,13 @@ export type StudentFullData = {
   bagrut: BagrutScores
   school: SchoolGrades
   result: ProbabilityResult
+}
+
+export type CohortFlags = {
+  lashon: boolean
+  tanach: boolean
+  history: boolean
+  civics: boolean
+  literature: boolean
+  english: boolean
 }

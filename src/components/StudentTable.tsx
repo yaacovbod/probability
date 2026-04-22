@@ -65,11 +65,11 @@ export function StudentTable({ data }: Props) {
       if (sortKey === 'fullName') { va = a.student.fullName; vb = b.student.fullName }
       else if (sortKey === 'classGroup') { va = a.student.classGroup; vb = b.student.classGroup }
       else if (sortKey === 'score') { va = a.result.score; vb = b.result.score }
-      else if (sortKey === 'lashon') { va = a.result.subjectProbs['לשון'] ?? -1; vb = b.result.subjectProbs['לשון'] ?? -1 }
-      else if (sortKey === 'tanach') { va = a.result.subjectProbs['תנ"ך'] ?? -1; vb = b.result.subjectProbs['תנ"ך'] ?? -1 }
-      else if (sortKey === 'history') { va = a.result.subjectProbs['היסטוריה'] ?? -1; vb = b.result.subjectProbs['היסטוריה'] ?? -1 }
-      else if (sortKey === 'english') { va = a.result.subjectProbs['אנגלית'] ?? -1; vb = b.result.subjectProbs['אנגלית'] ?? -1 }
-      else if (sortKey === 'math') { va = a.result.subjectProbs['מתמטיקה'] ?? -1; vb = b.result.subjectProbs['מתמטיקה'] ?? -1 }
+      else if (sortKey === 'lashon') { va = a.result.subjectProbs.lashon ?? -1; vb = b.result.subjectProbs.lashon ?? -1 }
+      else if (sortKey === 'tanach') { va = a.result.subjectProbs.tanach ?? -1; vb = b.result.subjectProbs.tanach ?? -1 }
+      else if (sortKey === 'history') { va = a.result.subjectProbs.history ?? -1; vb = b.result.subjectProbs.history ?? -1 }
+      else if (sortKey === 'english') { va = a.result.subjectProbs.english ?? -1; vb = b.result.subjectProbs.english ?? -1 }
+      else if (sortKey === 'math') { va = a.result.subjectProbs.math ?? -1; vb = b.result.subjectProbs.math ?? -1 }
       else if (sortKey === 'attendance') { va = a.student.attendanceAbsencePct ?? -1; vb = b.student.attendanceAbsencePct ?? -1 }
       if (va < vb) return sortAsc ? -1 : 1
       if (va > vb) return sortAsc ? 1 : -1
@@ -89,8 +89,8 @@ export function StudentTable({ data }: Props) {
     )
   }
 
-  function subjectCell(prob: number | undefined) {
-    if (prob === undefined) return <span className="text-gray-300">—</span>
+  function subjectCell(prob: number | null | undefined) {
+    if (prob === undefined || prob === null) return <span className="text-gray-300">—</span>
     if (prob === 0) return <span className="text-red-500 font-bold">0%</span>
     let color = 'text-red-500'
     if (prob >= 80) color = 'text-green-600'
@@ -160,11 +160,11 @@ export function StudentTable({ data }: Props) {
                   </TableCell>
                   <TableCell>{scoreCell(d.result.score)}</TableCell>
                   <TableCell>{riskBadge(d.result.risk)}</TableCell>
-                  <TableCell>{subjectCell(d.result.subjectProbs['לשון'])}</TableCell>
-                  <TableCell>{subjectCell(d.result.subjectProbs['תנ"ך'])}</TableCell>
-                  <TableCell>{subjectCell(d.result.subjectProbs['היסטוריה'])}</TableCell>
-                  <TableCell>{subjectCell(d.result.subjectProbs['אנגלית'])}</TableCell>
-                  <TableCell>{subjectCell(d.result.subjectProbs['מתמטיקה'])}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.lashon)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.tanach)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.history)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.english)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.math)}</TableCell>
                 </TableRow>
               )
             })}
