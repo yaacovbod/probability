@@ -12,6 +12,14 @@ function bool(val: unknown): boolean {
   return String(val).trim() === 'כן' || val === true || val === 1
 }
 
+function normalizeRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(row)) {
+    out[key.replace(/\r\n/g, '\n')] = row[key]
+  }
+  return out
+}
+
 export type ParsedExcel = {
   students: Student[]
   bagrutScores: BagrutScores[]
@@ -45,7 +53,9 @@ export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
     notes: String(row['הערות'] ?? ''),
   })).filter(s => s.id && s.id !== 'undefined')
 
-  const bagrutScores: BagrutScores[] = bagrutRaw.map((row) => ({
+  const bagrutScores: BagrutScores[] = bagrutRaw.map((rawRow) => {
+    const row = normalizeRow(rawRow)
+    return ({
     studentId: String(row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
     math_35173: n(row['35173\n25%'] ?? row['35173']),
     math_35371: n(row['35371\n35%'] ?? row['35371']),
@@ -68,20 +78,20 @@ export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
     literature_online: n(row['מבוקרות\n35%_3'] ?? row['ספרות\nמשימות\n35%'] ?? row['ספרות\nמשימות']),
     literature_exam: n(row['חיצוני\n35%_3'] ?? row['ספרות\nבחינה\n35%'] ?? row['ספרות\nבחינה']),
     literature_school: n(row['ב"ס\n30%_4'] ?? row['ספרות\nה"פ\n30%'] ?? row['ספרות\nה"פ']),
-    eng_A: n(row['מרכיב A\n27%'] ?? row['מרכיב A']),
-    eng_B: n(row['מרכיב B\n26%'] ?? row['מרכיב B']),
-    eng_C: n(row['מרכיב C\n27%'] ?? row['מרכיב C']),
-    eng_D: n(row['מרכיב D\n26%'] ?? row['מרכיב D']),
-    eng_E: n(row['מרכיב E\n27%'] ?? row['מרכיב E']),
-    eng_F: n(row['מרכיב F\n26%'] ?? row['מרכיב F']),
-    eng_G: n(row['מרכיב G\n27%'] ?? row['מרכיב G']),
+    eng_A: n(row['שאלון A\n27%'] ?? row['מרכיב A\n27%'] ?? row['שאלון A'] ?? row['מרכיב A']),
+    eng_B: n(row['שאלון B\n26%'] ?? row['מרכיב B\n26%'] ?? row['שאלון B'] ?? row['מרכיב B']),
+    eng_C: n(row['שאלון C\n27%'] ?? row['מרכיב C\n27%'] ?? row['שאלון C'] ?? row['מרכיב C']),
+    eng_D: n(row['שאלון D\n26%'] ?? row['מרכיב D\n26%'] ?? row['שאלון D'] ?? row['מרכיב D']),
+    eng_E: n(row['שאלון E\n27%'] ?? row['מרכיב E\n27%'] ?? row['שאלון E'] ?? row['מרכיב E']),
+    eng_F: n(row['שאלון F\n26%'] ?? row['מרכיב F\n26%'] ?? row['שאלון F'] ?? row['מרכיב F']),
+    eng_G: n(row['שאלון G\n27%'] ?? row['מרכיב G\n27%'] ?? row['שאלון G'] ?? row['מרכיב G']),
     eng_boost: n(row['Boost\n20%'] ?? row['Boost']),
-    eng_final: n(row['אנגלית\nציון\nסופי'] ?? row['אנגלית\nסופי'] ?? row['אנגלית ציון']),
-    major_bio: n(row['ביולוגיה\nציון'] ?? row['ביולוגיה']),
-    major_motal: n(row['מוט"ל\nציון'] ?? row['מוט"ל']),
-    major_languages: n(row['שפות\nציון'] ?? row['שפות']),
-    major_other: n(row['אחר\nציון'] ?? row['אחר']),
-  })).filter(s => s.studentId && s.studentId !== 'undefined')
+    eng_final: n(row['אנגלית\nסופי'] ?? row['אנגלית\nציון\nסופי'] ?? row['אנגלית ציון']),
+    major_bio: n(row['ביולוגיה\nסופי'] ?? row['ביולוגיה\nציון'] ?? row['ביולוגיה']),
+    major_motal: n(row['מוט"ל\nסופי'] ?? row['מוט"ל\nציון'] ?? row['מוט"ל']),
+    major_languages: n(row['שפות\nסופי'] ?? row['שפות\nציון'] ?? row['שפות']),
+    major_other: n(row['מגמה אחרת\nסופי'] ?? row['אחר\nציון'] ?? row['אחר']),
+  })}).filter(s => s.studentId && s.studentId !== 'undefined')
 
   const schoolGrades: SchoolGrades[] = schoolRaw.map((row) => ({
     studentId: String(row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
