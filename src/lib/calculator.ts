@@ -21,8 +21,8 @@ const GUARANTEED = {
 
 const RISK_THRESHOLDS = {
   low: 80,
-  medium: 65,
-  high: 45,
+  medium: 45,
+  high: 0,
 } as const
 
 
