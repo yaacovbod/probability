@@ -3,7 +3,6 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { localStorageAdapter } from '@/lib/storage'
 
 export default function UploadPage() {
   const [dragging, setDragging] = useState(false)
@@ -40,14 +39,7 @@ export default function UploadPage() {
     setStatus('preview')
   }
 
-  async function handleConfirm() {
-    if (!parsedData) return
-    setStatus('loading')
-    await localStorageAdapter.saveAll(
-      parsedData.students as never,
-      parsedData.bagrutScores as never,
-      parsedData.schoolGrades as never
-    )
+  function handleConfirm() {
     setStatus('done')
     setTimeout(() => router.push('/'), 1500)
   }
@@ -73,7 +65,7 @@ export default function UploadPage() {
             <p className="text-gray-500">לחץ או גרור קובץ Excel</p>
             <p className="text-xs text-gray-400 mt-1">פורמט: XLSX עם גיליונות תלמידים, ציוני_בגרות, ציוני_תעודה</p>
           </div>
-          <input ref={inputRef} type="file" accept=".xlsx" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
+          <input ref={inputRef} type="file" accept=".xlsx" className="hidden" dir="rtl" aria-label="בחירת קובץ Excel" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
         </CardContent>
       </Card>
 

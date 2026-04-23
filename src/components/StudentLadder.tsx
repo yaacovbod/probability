@@ -2,16 +2,10 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { StudentFullData, RiskLevel } from '@/lib/types'
+import { RISK_HEX_COLORS } from '@/lib/constants'
 
 type Props = {
   data: StudentFullData[]
-}
-
-const RISK_COLORS: Record<RiskLevel, string> = {
-  'גבוה מאוד': '#10B981',
-  'גבוה': '#0891B2',
-  'בינוני': '#F59E0B',
-  'נמוך מאוד': '#EF4444',
 }
 
 const RISK_RING: Record<RiskLevel, string> = {
@@ -178,7 +172,7 @@ export function StudentLadder({ data }: Props) {
               riskFilter === 'all' ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:bg-accent'
             }`}
           >הכל</button>
-          {(Object.keys(RISK_COLORS) as RiskLevel[]).map(risk => (
+          {(Object.keys(RISK_HEX_COLORS) as RiskLevel[]).map(risk => (
             <button
               key={risk}
               onClick={() => setRiskFilter(risk)}
@@ -186,7 +180,7 @@ export function StudentLadder({ data }: Props) {
                 riskFilter === risk ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:bg-accent'
               }`}
             >
-              <span className="w-2 h-2 rounded-full" style={{ background: RISK_COLORS[risk] }} />
+              <span className="w-2 h-2 rounded-full" style={{ background: RISK_HEX_COLORS[risk] }} />
               {risk}
               <span className="opacity-60">({riskCounts[risk]})</span>
             </button>
@@ -264,7 +258,7 @@ export function StudentLadder({ data }: Props) {
           {/* Dots (+ score label above + name below in single-class) */}
           {positioned.map((p, i) => {
             const isHovered = hovered === p.student.student.id
-            const color     = RISK_COLORS[p.student.result.risk]
+            const color     = RISK_HEX_COLORS[p.student.result.risk]
             const dotR      = isHovered ? 10 : isSingleClass ? 9 : 7
 
             return (
@@ -316,7 +310,7 @@ export function StudentLadder({ data }: Props) {
             }}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full" style={{ background: RISK_COLORS[hoveredStudent.student.result.risk] }} />
+              <span className="w-2 h-2 rounded-full" style={{ background: RISK_HEX_COLORS[hoveredStudent.student.result.risk] }} />
               <span>{hoveredStudent.student.student.fullName}</span>
             </div>
             <div className="text-[10px] opacity-75 font-normal">

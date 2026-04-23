@@ -1,15 +1,9 @@
 'use client'
+import { scoreHexColor } from '@/lib/styling'
 
 type GaugeProps = {
   score: number
   size?: number
-}
-
-function scoreColor(score: number): string {
-  if (score >= 85) return '#10B981'
-  if (score >= 70) return '#0891B2'
-  if (score >= 45) return '#F59E0B'
-  return '#EF4444'
 }
 
 export function Gauge({ score, size = 200 }: GaugeProps) {
@@ -32,12 +26,12 @@ export function Gauge({ score, size = 200 }: GaugeProps) {
   const start = polarToXY(0)
   const end = polarToXY(angle)
   const largeArc = angle > 180 ? 1 : 0
-  const color = scoreColor(score)
+  const color = scoreHexColor(score)
 
   const dotR = strokeWidth * 0.65
 
   return (
-    <svg width={size} height={size * 0.62} viewBox={`0 0 ${size} ${size * 0.62}`}>
+    <svg width={size} height={size * 0.62} viewBox={`0 0 ${size} ${size * 0.62}`} role="img" aria-label={`ציון סיכוי: ${score} מתוך 100`}>
       {/* Background track */}
       <path
         d={`M ${polarToXY(0).x} ${polarToXY(0).y} A ${r} ${r} 0 1 1 ${polarToXY(180).x} ${polarToXY(180).y}`}

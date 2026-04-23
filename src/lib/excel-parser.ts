@@ -1,16 +1,6 @@
 import * as XLSX from 'xlsx'
-import { Student, BagrutScores, SchoolGrades } from './types'
-
-function n(val: unknown): number | null {
-  if (val === null || val === undefined || val === '') return null
-  const num = Number(val)
-  return isNaN(num) ? null : num
-}
-
-function bool(val: unknown): boolean {
-  if (!val) return false
-  return String(val).trim() === 'כן' || val === true || val === 1
-}
+import { BagrutScores } from './types'
+import { n, parseStudentRow, parseSchoolGradesRow } from './parsers'
 
 function normalizeRow(row: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
@@ -21,9 +11,9 @@ function normalizeRow(row: Record<string, unknown>): Record<string, unknown> {
 }
 
 export type ParsedExcel = {
-  students: Student[]
+  students: ReturnType<typeof parseStudentRow>[]
   bagrutScores: BagrutScores[]
-  schoolGrades: SchoolGrades[]
+  schoolGrades: ReturnType<typeof parseSchoolGradesRow>[]
 }
 
 export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
@@ -41,17 +31,7 @@ export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
   const bagrutRaw = XLSX.utils.sheet_to_json<Record<string, unknown>>(bagrutSheet, { defval: null, range: 1 })
   const schoolRaw = XLSX.utils.sheet_to_json<Record<string, unknown>>(schoolSheet, { defval: null, range: 2 })
 
-  const students: Student[] = studentsRaw.map((row) => ({
-    id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
-    fullName: String(row['שם מלא'] ?? ''),
-    classGroup: String(row['כיתה'] ?? ''),
-    isSpecialEd: bool(row['חינ"מ'] ?? row['חינמ']),
-    isLateJoinerLashon: bool(row['הצטרף מאוחר (לשון)'] ?? row['הצטרף מאוחר']),
-    attendanceAbsencePct: n(row['אחוז היעדרות'] ?? row['היעדרות %']),
-    mathUnits: (n(row['יח"ל מתמטיקה'] ?? row['יח"ל מת']) as 3 | 4 | 5 | null),
-    englishUnits: (n(row['יח"ל אנגלית'] ?? row['יח"ל אנג']) as 3 | 4 | 5 | null),
-    notes: String(row['הערות'] ?? ''),
-  })).filter(s => s.id && s.id !== 'undefined')
+  const students = studentsRaw.map(parseStudentRow).filter(s => s.id && s.id !== 'undefined')
 
   const bagrutScores: BagrutScores[] = bagrutRaw.map((rawRow) => {
     const row = normalizeRow(rawRow)
@@ -93,25 +73,7 @@ export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
     major_other: n(row['מגמה אחרת\nסופי'] ?? row['אחר\nציון'] ?? row['אחר']),
   })}).filter(s => s.studentId && s.studentId !== 'undefined')
 
-  const schoolGrades: SchoolGrades[] = schoolRaw.map((row) => ({
-    studentId: String(row['ת.ז'] ?? row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
-    civics: n(row['אזרחות']),
-    english: n(row['אנגלית 5 יח"ל'] ?? row['אנגלית 4 יח"ל'] ?? row['אנגלית']),
-    history: n(row['היסטוריה']),
-    hebrew: n(row['לשון'] ?? row['עברית'] ?? row["עב''ר"]),
-    math: n(row['מתמטיקה 5 יח"ל'] ?? row['מתמטיקה 4 יח"ל'] ?? row['מתמטיקה 3 יח"ל'] ?? row['מתמטיקה']),
-    bible: n(row['תנ"ך'] ?? row['תנך']),
-    literature: n(row['ספרות']),
-    pe: n(row['חינוך גופני'] ?? row['חינוך גופני בנות'] ?? row['חינוך גופני בנים']),
-    major: (() => {
-      const vals = [
-        n(row['ביולוגיה']), n(row['אומנות']), n(row['מדעי המחשב']),
-        n(row['מידע ונתונים']), n(row['ניהול עסקי']), n(row['ניהול עסקי - יזמות']),
-        n(row['פיזיקה']), n(row['פסיכולוגיה']), n(row['תקשורת']),
-      ].filter((v): v is number => v !== null)
-      return vals.length > 0 ? Math.max(...vals) : null
-    })(),
-  })).filter(s => s.studentId && s.studentId !== 'undefined')
+  const schoolGrades = schoolRaw.map(parseSchoolGradesRow).filter(s => s.studentId && s.studentId !== 'undefined')
 
   return { students, bagrutScores, schoolGrades }
 }

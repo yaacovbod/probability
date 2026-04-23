@@ -25,6 +25,13 @@ const RISK_THRESHOLDS = {
   medium: 45,
 } as const
 
+// Passing threshold for each subject formula (Israeli bagrut: final ≥ 55 = passing)
+const PASS = {
+  lashon: { safeExam: 35, lowRisk: 32, veryLow: 28, finalHigh: 60, finalMid: 57, finalLow: 54, finalBorder: 51 },
+  spirit: { finalPass: 54.5, finalSafe: 60, borderFail: 52, veryLow: 48 },
+  math: { highConfidence: 65, midConfidence: 55, borderConfidence: 50 },
+} as const
+
 
 export function probLashon(
   exam: number | null,
@@ -37,20 +44,20 @@ export function probLashon(
     if (student.isSpecialEd) return GUARANTEED.specialEdLashon
     return 0
   }
-  // below 35: even 100 internal cannot bring final to passing threshold
-  if (exam < 35) {
-    if (exam >= 32) return 15
-    if (exam >= 28) return 10
+  // below safeExam: even 100 internal cannot bring final to passing threshold
+  if (exam < PASS.lashon.safeExam) {
+    if (exam >= PASS.lashon.lowRisk) return 15
+    if (exam >= PASS.lashon.veryLow) return 10
     return 5
   }
 
-  // 35+: internal grade can rescue
+  // safeExam+: internal grade can rescue
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const final = exam * 0.70 + internal * 0.30
-  if (final >= 60) return 100
-  if (final >= 57) return 95
-  if (final >= 54) return 85
-  if (final >= 51) return 75
+  if (final >= PASS.lashon.finalHigh) return 100
+  if (final >= PASS.lashon.finalMid) return 95
+  if (final >= PASS.lashon.finalLow) return 85
+  if (final >= PASS.lashon.finalBorder) return 75
   return 70
 }
 
@@ -68,11 +75,10 @@ export function probSpirit(
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const online = onlineGrade ?? GUARANTEED.onlineTasks
   const final = exam * 0.35 + online * 0.35 + internal * 0.30
-  // passing threshold is 54.5 (rounds up to 55)
-  if (final >= 60) return 100
-  if (final >= 54.5) return 95  // passes
-  if (final >= 52) return 25    // fails with defaults; small chance real grades are higher
-  if (final >= 48) return 15
+  if (final >= PASS.spirit.finalSafe) return 100
+  if (final >= PASS.spirit.finalPass) return 95   // passes (54.5 rounds up to 55)
+  if (final >= PASS.spirit.borderFail) return 25  // fails with defaults; small chance real grades are higher
+  if (final >= PASS.spirit.veryLow) return 15
   return 5
 }
 
@@ -132,9 +138,9 @@ function mathExamScore(scores: BagrutScores): number | null {
 }
 
 function scoreToProbMath(score: number): number {
-  if (score >= 65) return 100
-  if (score >= 55) return 85
-  if (score >= 50) return 55
+  if (score >= PASS.math.highConfidence) return 100
+  if (score >= PASS.math.midConfidence) return 85
+  if (score >= PASS.math.borderConfidence) return 55
   return 20
 }
 

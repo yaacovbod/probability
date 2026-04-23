@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { StudentFullData, RiskLevel } from '@/lib/types'
+import { scoreTextColor } from '@/lib/styling'
 
 type Props = {
   data: StudentFullData[]
@@ -30,11 +31,7 @@ function riskBadge(risk: RiskLevel) {
 }
 
 function scoreCell(score: number) {
-  let color = 'text-destructive'
-  if (score >= 80) color = 'text-emerald-600'
-  else if (score >= 65) color = 'text-primary'
-  else if (score >= 45) color = 'text-amber-600'
-  return <span className={`text-lg font-black tabular-nums ${color}`}>{score}</span>
+  return <span className={`text-lg font-black tabular-nums ${scoreTextColor(score)}`}>{score}</span>
 }
 
 function rowHover(): string {

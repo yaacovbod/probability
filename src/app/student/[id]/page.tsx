@@ -4,15 +4,9 @@ import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
 import { BackButton } from '@/components/BackButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { RISK_BADGE_CLASSES } from '@/lib/constants'
 
 export const revalidate = 60
-
-const RISK_COLORS: Record<string, string> = {
-  'גבוה מאוד': 'bg-green-200 text-green-900',
-  'גבוה': 'bg-green-100 text-green-800',
-  'בינוני': 'bg-yellow-100 text-yellow-800',
-  'נמוך מאוד': 'bg-red-100 text-red-800',
-}
 
 const SUBJECT_LABELS: Record<string, string> = {
   lashon: 'לשון',
@@ -72,7 +66,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         <Card className="flex flex-col items-center py-6">
           <Gauge score={result.score} size={200} />
           <div className="mt-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${RISK_COLORS[result.risk]}`}>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${RISK_BADGE_CLASSES[result.risk]}`}>
               סיכוי {result.risk}
             </span>
           </div>

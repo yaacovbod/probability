@@ -1,22 +1,14 @@
 'use client'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { StudentFullData, RiskLevel } from '@/lib/types'
+import { StudentFullData } from '@/lib/types'
+import { RISK_HEX_COLORS, RISK_LABEL_ORDER } from '@/lib/constants'
 
 type Props = {
   data: StudentFullData[]
 }
 
-const RISK_COLORS: Record<RiskLevel, string> = {
-  'גבוה מאוד': '#10B981',
-  'גבוה': '#0891B2',
-  'בינוני': '#F59E0B',
-  'נמוך מאוד': '#EF4444',
-}
-
-const RISK_ORDER: RiskLevel[] = ['גבוה מאוד', 'גבוה', 'בינוני', 'נמוך מאוד']
-
 export function RiskCharts({ data }: Props) {
-  const riskDist = RISK_ORDER.map(risk => ({
+  const riskDist = RISK_LABEL_ORDER.map(risk => ({
     name: risk,
     value: data.filter(d => d.result.risk === risk).length,
   })).filter(r => r.value > 0)
@@ -42,7 +34,7 @@ export function RiskCharts({ data }: Props) {
             <PieChart>
               <Pie data={riskDist} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} strokeWidth={3} stroke="#fff">
                 {riskDist.map(entry => (
-                  <Cell key={entry.name} fill={RISK_COLORS[entry.name as RiskLevel]} />
+                  <Cell key={entry.name} fill={RISK_HEX_COLORS[entry.name]} />
                 ))}
               </Pie>
               <Tooltip
@@ -56,13 +48,13 @@ export function RiskCharts({ data }: Props) {
             </PieChart>
           </ResponsiveContainer>
           <div className="flex flex-col gap-2.5 text-sm flex-1">
-            {RISK_ORDER.map(risk => {
+            {RISK_LABEL_ORDER.map(risk => {
               const count = data.filter(d => d.result.risk === risk).length
               if (count === 0) return null
               const pct = Math.round((count / data.length) * 100)
               return (
                 <div key={risk} className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: RISK_COLORS[risk] }} />
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: RISK_HEX_COLORS[risk] }} />
                   <span className="text-muted-foreground font-medium flex-1">{risk}</span>
                   <span className="font-black text-foreground tabular-nums">{count}</span>
                   <span className="text-xs text-muted-foreground tabular-nums w-8 text-left">{pct}%</span>
