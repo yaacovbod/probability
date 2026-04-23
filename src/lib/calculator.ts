@@ -164,23 +164,30 @@ export function probMath(scores: BagrutScores, schoolMath: number | null): numbe
   return 35
 }
 
-export function probMajor(scores: BagrutScores): number | null {
+export function probMajor(scores: BagrutScores, schoolMajor: number | null = null): number | null {
   const majors = [scores.major_bio, scores.major_motal, scores.major_languages, scores.major_other]
-  const hasMajorData = majors.some(m => m !== null)
-  if (!hasMajorData) return null
+  const hasBagrutData = majors.some(m => m !== null)
 
-  let bestProb: number | null = null
-  for (const m of majors) {
-    if (m === null || m === 0) continue
-    const p = m >= 70 ? 95 : m >= 60 ? 85 : m >= 55 ? 75 : m >= 50 ? 50 : 20
-    if (bestProb === null || p > bestProb) bestProb = p
+  if (hasBagrutData) {
+    let bestProb: number | null = null
+    for (const m of majors) {
+      if (m === null || m === 0) continue
+      const p = m >= 70 ? 95 : m >= 60 ? 85 : m >= 55 ? 75 : m >= 50 ? 50 : 20
+      if (bestProb === null || p > bestProb) bestProb = p
+    }
+    const allExplicitZero = majors.every(m => m === null || m === 0)
+    const anyZero = majors.some(m => m === 0)
+    if (allExplicitZero && anyZero) return 0
+    return bestProb
   }
 
-  const allExplicitZero = majors.every(m => m === null || m === 0)
-  const anyZero = majors.some(m => m === 0)
-  if (allExplicitZero && anyZero) return 0
-
-  return bestProb
+  // no bagrut data yet — estimate from school grade
+  if (schoolMajor === null) return null
+  if (schoolMajor >= 85) return 90
+  if (schoolMajor >= 75) return 80
+  if (schoolMajor >= 65) return 65
+  if (schoolMajor >= 55) return 50
+  return 30
 }
 
 function calcS1(
@@ -200,7 +207,7 @@ function calcS1(
     literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online),
     english: probEnglish(engFinal, grades.english),
     math: probMath(scores, grades.math),
-    major: probMajor(scores),
+    major: probMajor(scores, grades.major),
   }
 
   const weighted: Array<{ prob: number; weight: number }> = []

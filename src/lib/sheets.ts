@@ -140,6 +140,14 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
     bible: n(row['תנ"ך'] ?? row['תנך']),
     literature: n(row['ספרות']),
     pe: n(row['חינוך גופני'] ?? row['חינוך גופני בנות'] ?? row['חינוך גופני בנים']),
+    major: (() => {
+      const vals = [
+        n(row['ביולוגיה']), n(row['אומנות']), n(row['מדעי המחשב']),
+        n(row['מידע ונתונים']), n(row['ניהול עסקי']), n(row['ניהול עסקי - יזמות']),
+        n(row['פיזיקה']), n(row['פסיכולוגיה']), n(row['תקשורת']),
+      ].filter((v): v is number => v !== null)
+      return vals.length > 0 ? Math.max(...vals) : null
+    })(),
   })).filter(s => s.studentId && s.studentId !== 'undefined' && s.studentId !== '')
 
   return { students, bagrutScores, schoolGrades }
