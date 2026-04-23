@@ -9,10 +9,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 const RISK_COLORS: Record<string, string> = {
-  'נמוך': 'bg-green-100 text-green-800',
+  'גבוה מאוד': 'bg-green-200 text-green-900',
+  'גבוה': 'bg-green-100 text-green-800',
   'בינוני': 'bg-yellow-100 text-yellow-800',
-  'גבוה': 'bg-orange-100 text-orange-800',
-  'גבוה מאוד': 'bg-red-100 text-red-800',
+  'נמוך מאוד': 'bg-red-100 text-red-800',
 }
 
 export default function StudentPage() {
