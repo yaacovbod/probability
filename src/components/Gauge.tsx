@@ -6,10 +6,10 @@ type GaugeProps = {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 80) return '#22c55e'
-  if (score >= 65) return '#eab308'
-  if (score >= 45) return '#f97316'
-  return '#ef4444'
+  if (score >= 85) return '#10B981'
+  if (score >= 70) return '#0891B2'
+  if (score >= 45) return '#F59E0B'
+  return '#EF4444'
 }
 
 export function Gauge({ score, size = 200 }: GaugeProps) {
