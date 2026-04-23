@@ -60,7 +60,7 @@ export type SchoolGrades = {
   pe: number | null
 }
 
-export type RiskLevel = 'גבוה' | 'בינוני' | 'נמוך' | 'נמוך מאוד'
+export type RiskLevel = 'גבוה מאוד' | 'גבוה' | 'בינוני' | 'נמוך מאוד'
 
 export type SubjectProbs = {
   lashon: number | null

@@ -8,9 +8,9 @@ import { StudentTable } from '@/components/StudentTable'
 import { Button } from '@/components/ui/button'
 
 const RISK_COLORS: Record<string, string> = {
+  'גבוה מאוד': '#15803d',
   'גבוה': '#22c55e',
   'בינוני': '#eab308',
-  'נמוך': '#f97316',
   'נמוך מאוד': '#ef4444',
 }
 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  const riskDist = ['גבוה', 'בינוני', 'נמוך', 'נמוך מאוד'].map(risk => ({
+  const riskDist = ['גבוה מאוד', 'גבוה', 'בינוני', 'נמוך מאוד'].map(risk => ({
     name: risk,
     value: data.filter(d => d.result.risk === risk).length,
   })).filter(r => r.value > 0)
@@ -95,7 +95,7 @@ export default function DashboardPage() {
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-2 text-sm">
-              {['גבוה', 'בינוני', 'נמוך', 'נמוך מאוד'].map(risk => {
+              {['גבוה מאוד', 'גבוה', 'בינוני', 'נמוך מאוד'].map(risk => {
                 const count = data.filter(d => d.result.risk === risk).length
                 if (count === 0) return null
                 return (

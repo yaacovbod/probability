@@ -15,9 +15,9 @@ type SortKey = 'fullName' | 'classGroup' | 'score' | 'lashon' | 'tanach' | 'hist
 
 function riskBadge(risk: RiskLevel) {
   const map: Record<RiskLevel, string> = {
+    'גבוה מאוד': 'bg-green-200 text-green-900',
     'גבוה': 'bg-green-100 text-green-800',
     'בינוני': 'bg-yellow-100 text-yellow-800',
-    'נמוך': 'bg-orange-100 text-orange-800',
     'נמוך מאוד': 'bg-red-100 text-red-800',
   }
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${map[risk]}`}>{risk}</span>
@@ -33,13 +33,12 @@ function scoreCell(score: number) {
 
 function rowBg(risk: RiskLevel): string {
   if (risk === 'נמוך מאוד') return 'bg-red-50 hover:bg-red-100'
-  if (risk === 'נמוך') return 'bg-orange-50 hover:bg-orange-100'
   if (risk === 'בינוני') return 'bg-yellow-50 hover:bg-yellow-100'
   return 'bg-green-50 hover:bg-green-100'
 }
 
 const CLASSES = ['הכל', 'יא1', 'יא2', 'יא3', 'יא4', 'יא5', 'יא6']
-const RISKS: (RiskLevel | 'הכל')[] = ['הכל', 'גבוה', 'בינוני', 'נמוך', 'נמוך מאוד']
+const RISKS: (RiskLevel | 'הכל')[] = ['הכל', 'גבוה מאוד', 'גבוה', 'בינוני', 'נמוך מאוד']
 
 export function StudentTable({ data }: Props) {
   const [search, setSearch] = useState('')

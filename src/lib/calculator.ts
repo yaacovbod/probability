@@ -20,9 +20,9 @@ const GUARANTEED = {
 } as const
 
 const RISK_THRESHOLDS = {
-  low: 80,
+  veryHigh: 85,
+  high: 70,
   medium: 45,
-  high: 0,
 } as const
 
 
@@ -294,9 +294,9 @@ export function calculateProbability(
   const score = Math.min(100, Math.max(0, Math.round(raw * 10) / 10))
 
   let risk: RiskLevel
-  if (score >= RISK_THRESHOLDS.low) risk = 'גבוה'
+  if (score >= RISK_THRESHOLDS.veryHigh) risk = 'גבוה מאוד'
+  else if (score >= RISK_THRESHOLDS.high) risk = 'גבוה'
   else if (score >= RISK_THRESHOLDS.medium) risk = 'בינוני'
-  else if (score >= RISK_THRESHOLDS.high) risk = 'נמוך'
   else risk = 'נמוך מאוד'
 
   return {
