@@ -32,25 +32,27 @@ export async function GET() {
       getSheetValues('ציוני_תעודה'),
     ])
 
+    const studentIds = studentsRows.slice(1).map(r => String(r[0] ?? '').trim()).filter(Boolean)
+    const bagrutIds = bagrutRows.slice(2).map(r => String(r[0] ?? '').trim()).filter(Boolean)
+    const schoolIds = schoolRows.slice(1).map(r => String(r[0] ?? '').trim()).filter(Boolean)
+
+    const bagrutSet = new Set(bagrutIds)
+    const schoolSet = new Set(schoolIds)
+    const matchedBagrut = studentIds.filter(id => bagrutSet.has(id))
+    const matchedSchool = studentIds.filter(id => schoolSet.has(id))
+    const unmatchedBagrut = studentIds.filter(id => !bagrutSet.has(id)).slice(0, 5)
+
     return NextResponse.json({
-      students: {
-        headerRow0: studentsRows[0] ?? [],
-        firstDataRow: studentsRows[1] ?? [],
-        totalRows: studentsRows.length,
+      idMatching: {
+        totalStudents: studentIds.length,
+        matchedInBagrut: matchedBagrut.length,
+        matchedInSchool: matchedSchool.length,
+        first5StudentIds: studentIds.slice(0, 5),
+        first5BagrutIds: bagrutIds.slice(0, 5),
+        first5SchoolIds: schoolIds.slice(0, 5),
+        unmatchedStudentIds: unmatchedBagrut,
       },
-      bagrut: {
-        headerRow0: bagrutRows[0] ?? [],
-        headerRow1: bagrutRows[1] ?? [],
-        firstDataRow: bagrutRows[2] ?? [],
-        totalRows: bagrutRows.length,
-      },
-      school: {
-        headerRow0: schoolRows[0] ?? [],
-        headerRow1: schoolRows[1] ?? [],
-        headerRow2: schoolRows[2] ?? [],
-        firstDataRow: schoolRows[3] ?? [],
-        totalRows: schoolRows.length,
-      },
+      bagrutSampleRow: { id: bagrutRows[2]?.[0], name: bagrutRows[2]?.[1], col20: bagrutRows[2]?.[20], col28: bagrutRows[2]?.[28] },
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
