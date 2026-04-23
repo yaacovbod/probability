@@ -74,7 +74,7 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
   ])
 
   const studentsRaw = rowsToObjects(studentsRows, 0)
-  const bagrutRaw = rowsToObjects(bagrutRows, 1)
+  const bagrutRaw = rowsToObjects(bagrutRows, 0)
   const schoolRaw = rowsToObjects(schoolRows, 0)
 
   const students: Student[] = studentsRaw.map(row => ({
