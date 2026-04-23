@@ -74,8 +74,9 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
   ])
 
   const studentsRaw = rowsToObjects(studentsRows, 0)
-  const bagrutRaw = rowsToObjects(bagrutRows, 0)
   const schoolRaw = rowsToObjects(schoolRows, 0)
+  // bagrut sheet has no column-header row — row 0 is merged category, data starts at row 1
+  const bagrutDataRows = bagrutRows.slice(1)
 
   const students: Student[] = studentsRaw.map(row => ({
     id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
@@ -89,43 +90,45 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
     notes: String(row['הערות'] ?? ''),
   })).filter(s => s.id && s.id !== 'undefined' && s.id !== '')
 
-  const bagrutScores: BagrutScores[] = bagrutRaw.map(row => ({
-    studentId: String(row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
-    math_35173: n(row['35173\n25%'] ?? row['35173']),
-    math_35371: n(row['35371\n35%'] ?? row['35371']),
-    math_35372: n(row['35372\n40%'] ?? row['35372']),
-    math_35471: n(row['35471\n65%'] ?? row['35471']),
-    math_35472: n(row['35472\n35%'] ?? row['35472']),
-    math_35571: n(row['35571\n60%'] ?? row['35571']),
-    math_35572: n(row['35572\n40%'] ?? row['35572']),
-    lashon_exam: n(row['חיצוני\n70%'] ?? row['בחינה\n70%']),
-    lashon_school: n(row['ב"ס\n30%'] ?? row['ה"פ\n30%']),
-    history_online: n(row['מבוקרות\n35%']),
-    history_exam: n(row['חיצוני\n35%']),
-    history_school: n(row['ב"ס\n30%_1']),
-    tanach_online: n(row['מבוקרות\n35%_1']),
-    tanach_exam: n(row['חיצוני\n35%_1']),
-    tanach_school: n(row['ב"ס\n30%_2']),
-    civics_online: n(row['מבוקרות\n35%_2']),
-    civics_exam: n(row['חיצוני\n35%_2']),
-    civics_school: n(row['ב"ס\n30%_3']),
-    literature_online: n(row['מבוקרות\n35%_3']),
-    literature_exam: n(row['חיצוני\n35%_3']),
-    literature_school: n(row['ב"ס\n30%_4']),
-    eng_A: n(row['שאלון A\n27%'] ?? row['מרכיב A\n27%']),
-    eng_B: n(row['שאלון B\n26%'] ?? row['מרכיב B\n26%']),
-    eng_C: n(row['שאלון C\n27%'] ?? row['מרכיב C\n27%']),
-    eng_D: n(row['שאלון D\n26%'] ?? row['מרכיב D\n26%']),
-    eng_E: n(row['שאלון E\n27%'] ?? row['מרכיב E\n27%']),
-    eng_F: n(row['שאלון F\n26%'] ?? row['מרכיב F\n26%']),
-    eng_G: n(row['שאלון G\n27%'] ?? row['מרכיב G\n27%']),
-    eng_boost: n(row['Boost\n20%'] ?? row['Boost']),
-    eng_final: n(row['אנגלית\nסופי'] ?? row['אנגלית\nציון\nסופי']),
-    major_bio: n(row['ביולוגיה\nסופי'] ?? row['ביולוגיה\nציון'] ?? row['ביולוגיה']),
-    major_motal: n(row['מוט"ל\nסופי'] ?? row['מוט"ל\nציון'] ?? row['מוט"ל']),
-    major_languages: n(row['שפות\nסופי'] ?? row['שפות\nציון'] ?? row['שפות']),
-    major_other: n(row['מגמה אחרת\nסופי'] ?? row['אחר\nציון'] ?? row['אחר']),
-  })).filter(s => s.studentId && s.studentId !== 'undefined' && s.studentId !== '')
+  const bagrutScores: BagrutScores[] = bagrutDataRows
+    .filter(row => row[0] && String(row[0]).trim())
+    .map(row => ({
+      studentId: String(row[0] ?? '').trim(),
+      eng_A: n(row[3]),
+      eng_B: n(row[4]),
+      eng_C: n(row[5]),
+      eng_D: n(row[6]),
+      eng_E: n(row[7]),
+      eng_F: n(row[8]),
+      eng_G: n(row[9]),
+      eng_boost: n(row[10]),
+      eng_final: n(row[11]),
+      math_35173: n(row[12]),
+      math_35371: n(row[13]),
+      math_35372: n(row[14]),
+      math_35471: n(row[15]),
+      math_35472: n(row[16]),
+      math_35571: n(row[17]),
+      math_35572: n(row[18]),
+      lashon_exam: n(row[20]),
+      lashon_school: n(row[21]),
+      history_online: n(row[23]),
+      history_exam: n(row[24]),
+      history_school: n(row[25]),
+      tanach_online: n(row[27]),
+      tanach_exam: n(row[28]),
+      tanach_school: n(row[29]),
+      civics_online: n(row[31]),
+      civics_exam: n(row[32]),
+      civics_school: n(row[33]),
+      literature_online: n(row[35]),
+      literature_exam: n(row[36]),
+      literature_school: n(row[37]),
+      major_bio: n(row[39]),
+      major_motal: n(row[40]),
+      major_languages: n(row[41]),
+      major_other: n(row[42]),
+    }))
 
   const schoolGrades: SchoolGrades[] = schoolRaw.map(row => ({
     studentId: String(row['ת.ז'] ?? row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
