@@ -218,8 +218,7 @@ function calcS1(
 
   const totalWeight = weighted.reduce((sum, w) => sum + w.weight, 0)
   const normalizedAvg = weighted.reduce((sum, w) => sum + w.prob * (w.weight / totalWeight), 0)
-  const minProb = Math.min(...weighted.map(w => w.prob))
-  const s1 = minProb * 0.55 + normalizedAvg * 0.45
+  const s1 = normalizedAvg
 
   return { s1, subjectProbs: sp }
 }
