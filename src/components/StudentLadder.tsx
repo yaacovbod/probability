@@ -100,11 +100,15 @@ export function StudentLadder({ data }: Props) {
         a.student.fullName.localeCompare(b.student.fullName, 'he')
       )
       const count = sorted.length
+      // add inner padding so dots don't touch y-axis labels (left) or zone labels (right)
+      const DOT_L = DOT_AREA_LEFT + 15
+      const DOT_R = DOT_AREA_RIGHT - 25
+      const DOT_W = DOT_R - DOT_L
       return sorted.map((d, i) => ({
         student: d,
         cx: count <= 1
-          ? DOT_AREA_LEFT + USABLE / 2
-          : DOT_AREA_LEFT + (USABLE / (count - 1)) * i,
+          ? DOT_L + DOT_W / 2
+          : DOT_L + (DOT_W / (count - 1)) * i,
         cy: scoreToY(d.result.score),
       }))
     }
