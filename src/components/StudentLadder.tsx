@@ -322,32 +322,6 @@ export function StudentLadder({ data }: Props) {
         )}
       </div>
 
-      {/* Names strip — rendered as HTML below the SVG card in single-class mode */}
-      {isSingleClass && positioned.length > 0 && (
-        <div className="relative h-8 mt-1" dir="rtl">
-          {positioned.map(p => (
-            <button
-              key={p.student.student.id}
-              className="absolute text-center cursor-pointer hover:opacity-100 transition-opacity"
-              style={{
-                left: `${(p.cx / SVG_WIDTH) * 100}%`,
-                transform: 'translateX(-50%)',
-                color: RISK_COLORS[p.student.result.risk],
-                fontSize: 11,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                top: 0,
-                opacity: hovered === p.student.student.id ? 1 : 0.8,
-              }}
-              onMouseEnter={() => setHovered(p.student.student.id)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => router.push(`/student/${p.student.student.id}`)}
-            >
-              {hebrewFirstName(p.student.student.fullName)}
-            </button>
-          ))}
-        </div>
-      )}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <p className="font-medium">
