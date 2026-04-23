@@ -90,10 +90,10 @@ export default function DashboardPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight leading-tight">
             דשבורד בגרות
-            <span className="block text-primary">שכבת יא׳</span>
+            <span className="block text-primary">מחזור ג׳</span>
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base font-medium">
-            מעקב אחרי סיכויי הצלחה של {data.length} תלמידים · ממוצע שכבתי {avgScore}
+            מעקב אחרי סיכויי הצלחה של {data.length} תלמידים
           </p>
         </div>
         <Link href="/upload">
