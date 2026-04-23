@@ -127,10 +127,11 @@ export function StudentTable({ data }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="text-right">ת"ז</TableHead>
               <Th k="fullName" label="שם" />
               <Th k="classGroup" label="כיתה" />
               <TableHead className="text-right">חינ"מ</TableHead>
-              <Th k="attendance" label="נוכחות" />
+              <Th k="attendance" label="היעדרויות" />
               <Th k="score" label="סיכוי" />
               <TableHead className="text-right">סיכון</TableHead>
               <Th k="lashon" label="לשון" />
@@ -143,19 +144,19 @@ export function StudentTable({ data }: Props) {
           <TableBody>
             {filtered.map(d => {
               const absence = d.student.attendanceAbsencePct
-              const presence = absence !== null ? Math.round(100 - absence) : null
               return (
                 <TableRow
                   key={d.student.id}
                   className={`${rowBg(d.result.risk)} cursor-pointer`}
                   onClick={() => router.push(`/student/${d.student.id}`)}
                 >
+                  <TableCell className="text-gray-500 text-sm">{d.student.id}</TableCell>
                   <TableCell className="font-medium">{d.student.fullName}</TableCell>
-                  <TableCell>{d.student.classGroup}</TableCell>
+                  <TableCell>יא{d.student.classGroup.replace(/.*?(\d+)$/, '$1')}</TableCell>
                   <TableCell>{d.student.isSpecialEd ? '★' : ''}</TableCell>
                   <TableCell>
-                    {presence !== null ? (
-                      <span className={presence < 75 ? 'text-red-600 font-bold' : ''}>{presence}%</span>
+                    {absence !== null ? (
+                      <span className={absence > 25 ? 'text-red-600 font-bold' : ''}>{Math.round(absence)}%</span>
                     ) : '—'}
                   </TableCell>
                   <TableCell>{scoreCell(d.result.score)}</TableCell>
