@@ -68,11 +68,12 @@ export function probSpirit(
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const online = onlineGrade ?? GUARANTEED.onlineTasks
   const final = exam * 0.35 + online * 0.35 + internal * 0.30
+  // passing threshold is 54.5 (rounds up to 55)
   if (final >= 60) return 100
-  if (final >= 55) return 98
-  if (final >= 52) return 80
-  if (final >= 50) return 60
-  return 30
+  if (final >= 54.5) return 95  // passes
+  if (final >= 52) return 25    // fails with defaults; small chance real grades are higher
+  if (final >= 48) return 15
+  return 5
 }
 
 export function probHistory(
