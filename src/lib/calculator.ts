@@ -37,14 +37,21 @@ export function probLashon(
     if (student.isSpecialEd) return GUARANTEED.specialEdLashon
     return 0
   }
+  // below 35: even 100 internal cannot bring final to passing threshold
+  if (exam < 35) {
+    if (exam >= 32) return 15
+    if (exam >= 28) return 10
+    return 5
+  }
+
+  // 35+: internal grade can rescue
   const internal = schoolGrade ?? GUARANTEED.internalGrade
   const final = exam * 0.70 + internal * 0.30
   if (final >= 60) return 100
-  if (final >= 55) return 95
-  if (final >= 52) return 70
-  if (final >= 48) return 40
-  if (final >= 44) return 15
-  return 5
+  if (final >= 57) return 95
+  if (final >= 54) return 85
+  if (final >= 51) return 75
+  return 70
 }
 
 export function probSpirit(
