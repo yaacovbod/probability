@@ -35,7 +35,7 @@ async function getSheetValues(sheetName: string): Promise<string[][]> {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${encodeURIComponent(sheetName)}`
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
+    next: { revalidate: 60 },
   })
   if (!res.ok) throw new Error(`Sheets API error: ${res.status} ${await res.text()}`)
   const data = await res.json()

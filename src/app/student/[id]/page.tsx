@@ -1,12 +1,11 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { StudentFullData } from '@/lib/types'
+import { notFound } from 'next/navigation'
+import { getStudentsData } from '@/lib/data'
 import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
+import { BackButton } from '@/components/BackButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+
+export const revalidate = 60
 
 const RISK_COLORS: Record<string, string> = {
   'גבוה מאוד': 'bg-green-200 text-green-900',
@@ -15,28 +14,23 @@ const RISK_COLORS: Record<string, string> = {
   'נמוך מאוד': 'bg-red-100 text-red-800',
 }
 
-export default function StudentPage() {
-  const { id } = useParams<{ id: string }>()
-  const router = useRouter()
-  const [fullData, setFullData] = useState<StudentFullData | null>(null)
-  const [loading, setLoading] = useState(true)
+const SUBJECT_LABELS: Record<string, string> = {
+  lashon: 'לשון',
+  tanach: 'תנ"ך',
+  history: 'היסטוריה',
+  civics: 'אזרחות',
+  literature: 'ספרות',
+  english: 'אנגלית',
+  math: 'מתמטיקה',
+  major: 'מגמה',
+}
 
-  useEffect(() => {
-    async function load() {
-      const res = await fetch('/api/data')
-      if (!res.ok) { setLoading(false); return }
-      const all: StudentFullData[] = await res.json()
-      const found = all.find(d => d.student.id === id) ?? null
-      setFullData(found)
-      setLoading(false)
-    }
-    load()
-  }, [id])
+export default async function StudentPage({ params }: { params: { id: string } }) {
+  const all = await getStudentsData()
+  const fullData = all.find(d => d.student.id === params.id)
+  if (!fullData) notFound()
 
-  if (loading) return <div dir="rtl" className="p-8 text-gray-500">טוען...</div>
-  if (!fullData) return <div dir="rtl" className="p-8 text-red-500">תלמיד לא נמצא</div>
-
-  const { student, bagrut, school, result } = fullData
+  const { student, school, result } = fullData
   const absence = student.attendanceAbsencePct
   const presence = absence !== null ? Math.round(100 - absence) : null
 
@@ -47,16 +41,6 @@ export default function StudentPage() {
     { label: 'נוכחות', value: result.breakdown.attendance, weight: '20%' },
   ]
 
-  const SUBJECT_LABELS: Record<string, string> = {
-    lashon: 'לשון',
-    tanach: 'תנ"ך',
-    history: 'היסטוריה',
-    civics: 'אזרחות',
-    literature: 'ספרות',
-    english: 'אנגלית',
-    math: 'מתמטיקה',
-    major: 'מגמה',
-  }
   const subjects = (Object.entries(result.subjectProbs) as [string, number | null][])
     .filter(([, v]) => v !== null)
     .map(([k, v]) => ({ name: SUBJECT_LABELS[k] ?? k, prob: v as number }))
@@ -74,7 +58,7 @@ export default function StudentPage() {
   return (
     <main dir="rtl" className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>← חזרה</Button>
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold">
             {student.fullName}
@@ -170,4 +154,3 @@ export default function StudentPage() {
     </main>
   )
 }
-
