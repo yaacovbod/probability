@@ -166,7 +166,7 @@ export function probMath(scores: BagrutScores, schoolMath: number | null): numbe
 
 export function probMajor(scores: BagrutScores, schoolMajor: number | null = null): number | null {
   const majors = [scores.major_bio, scores.major_motal, scores.major_languages, scores.major_other]
-  const hasBagrutData = majors.some(m => m !== null)
+  const hasBagrutData = majors.some(m => m !== null && m > 0)
 
   if (hasBagrutData) {
     let bestProb: number | null = null
