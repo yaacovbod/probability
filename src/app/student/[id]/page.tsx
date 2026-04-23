@@ -89,7 +89,7 @@ export default function StudentPage() {
           <Gauge score={result.score} size={200} />
           <div className="mt-3">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${RISK_COLORS[result.risk]}`}>
-              סיכון {result.risk}
+              סיכוי {result.risk}
             </span>
           </div>
         </Card>
