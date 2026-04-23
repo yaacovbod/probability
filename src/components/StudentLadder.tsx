@@ -44,10 +44,15 @@ const LADDER_HEIGHT = 680
 const LADDER_PADDING_TOP = 32
 const LADDER_PADDING_BOTTOM = 40
 const TRACK_HEIGHT = LADDER_HEIGHT - LADDER_PADDING_TOP - LADDER_PADDING_BOTTOM
+const NAME_AREA = 140
 
 function scoreToY(score: number): number {
   const clamped = Math.max(0, Math.min(100, score))
   return LADDER_PADDING_TOP + (100 - clamped) / 100 * TRACK_HEIGHT
+}
+
+function hebrewFirstName(fullName: string): string {
+  return fullName.split(' ')[0] ?? fullName
 }
 
 export function StudentLadder({ data }: Props) {
@@ -55,6 +60,9 @@ export function StudentLadder({ data }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
   const [classFilter, setClassFilter] = useState<'all' | number>('all')
   const [riskFilter, setRiskFilter] = useState<'all' | RiskLevel>('all')
+
+  const isSingleClass = classFilter !== 'all'
+  const svgHeight = isSingleClass ? LADDER_HEIGHT + NAME_AREA : LADDER_HEIGHT
 
   const filtered = useMemo(() => {
     return data.filter(d => {
@@ -82,6 +90,26 @@ export function StudentLadder({ data }: Props) {
   }, [data])
 
   const positioned = useMemo<Positioned[]>(() => {
+    const LEFT_PAD = 70
+    const RIGHT_PAD = 80
+    const USABLE_WIDTH = 1000 - LEFT_PAD - RIGHT_PAD
+
+    // Single class mode: spread evenly, sorted by name alphabetically
+    if (isSingleClass) {
+      const sorted = [...filtered].sort((a, b) =>
+        a.student.fullName.localeCompare(b.student.fullName, 'he')
+      )
+      const count = sorted.length
+      return sorted.map((d, i) => {
+        const cx = count === 1
+          ? LEFT_PAD + USABLE_WIDTH / 2
+          : LEFT_PAD + (USABLE_WIDTH / (count - 1)) * i
+        const cy = scoreToY(d.result.score)
+        return { student: d, cx, cy, classIndex: 0 }
+      })
+    }
+
+    // Multi class mode: lane per class with collision avoidance
     const byClass = new Map<number, StudentFullData[]>()
     filtered.forEach(d => {
       const n = extractClassNumber(d.student.classGroup) || 0
@@ -90,18 +118,13 @@ export function StudentLadder({ data }: Props) {
     })
 
     const allClasses = classNumbers.length > 0 ? classNumbers : [0]
-    const laneCount = allClasses.length
-    const LANE_PADDING_LEFT = 60
-    const LANE_PADDING_RIGHT = 80
-    const laneWidth = (1000 - LANE_PADDING_LEFT - LANE_PADDING_RIGHT) / laneCount
-
+    const laneWidth = USABLE_WIDTH / allClasses.length
     const result: Positioned[] = []
 
     byClass.forEach((students, classNum) => {
       const classIndex = allClasses.indexOf(classNum)
       if (classIndex === -1) return
-      const laneCenter = LANE_PADDING_LEFT + laneWidth * classIndex + laneWidth / 2
-
+      const laneCenter = LEFT_PAD + laneWidth * classIndex + laneWidth / 2
       const sorted = [...students].sort((a, b) => a.result.score - b.result.score)
       const placed: { y: number; x: number }[] = []
 
@@ -112,9 +135,7 @@ export function StudentLadder({ data }: Props) {
         const maxJitter = Math.min(laneWidth * 0.42, 40)
         while (placed.some(p => Math.abs(p.y - baseY) < 14 && Math.abs(p.x - cx) < 16) && attempt < 12) {
           attempt++
-          const direction = attempt % 2 === 0 ? 1 : -1
-          const magnitude = Math.min(maxJitter, 8 + attempt * 4)
-          cx = laneCenter + direction * magnitude
+          cx = laneCenter + (attempt % 2 === 0 ? 1 : -1) * Math.min(maxJitter, 8 + attempt * 4)
         }
         placed.push({ y: baseY, x: cx })
         result.push({ student: d, cx, cy: baseY, classIndex })
@@ -122,7 +143,7 @@ export function StudentLadder({ data }: Props) {
     })
 
     return result
-  }, [filtered, classNumbers])
+  }, [filtered, classNumbers, isSingleClass])
 
   const hoveredStudent = hovered ? positioned.find(p => p.student.student.id === hovered) : null
 
@@ -182,30 +203,18 @@ export function StudentLadder({ data }: Props) {
 
       <div className="relative rounded-3xl bg-card border border-border/60 shadow-clarity overflow-hidden">
         <svg
-          viewBox={`0 0 1000 ${LADDER_HEIGHT}`}
+          viewBox={`0 0 1000 ${svgHeight}`}
           className="w-full h-auto"
           style={{ minHeight: 520 }}
           preserveAspectRatio="xMidYMid meet"
         >
-          <defs>
-            <linearGradient id="ladder-fade" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(8, 145, 178, 0.05)" />
-              <stop offset="100%" stopColor="rgba(8, 145, 178, 0)" />
-            </linearGradient>
-          </defs>
-
+          {/* Zone backgrounds */}
           {ZONES.map(zone => {
             const yTop = scoreToY(zone.max)
             const yBottom = scoreToY(zone.min)
             return (
               <g key={zone.label}>
-                <rect
-                  x={60}
-                  y={yTop}
-                  width={860}
-                  height={yBottom - yTop}
-                  fill={zone.bg}
-                />
+                <rect x={60} y={yTop} width={860} height={yBottom - yTop} fill={zone.bg} />
                 <line
                   x1={60} x2={920} y1={yBottom} y2={yBottom}
                   stroke="rgba(148, 163, 184, 0.25)"
@@ -219,7 +228,6 @@ export function StudentLadder({ data }: Props) {
                   fontWeight={700}
                   dominantBaseline="middle"
                   textAnchor="start"
-                  direction="rtl"
                 >
                   {zone.label}
                 </text>
@@ -227,14 +235,14 @@ export function StudentLadder({ data }: Props) {
             )
           })}
 
+          {/* Y axis ticks */}
           {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => {
             const y = scoreToY(v)
             const isMajor = v % 20 === 0
             return (
               <g key={v}>
                 <text
-                  x={48}
-                  y={y}
+                  x={48} y={y}
                   fill="var(--muted-foreground)"
                   fontSize={isMajor ? 11 : 9}
                   fontWeight={isMajor ? 700 : 500}
@@ -245,22 +253,16 @@ export function StudentLadder({ data }: Props) {
                   {v}
                 </text>
                 {isMajor && (
-                  <line
-                    x1={54} x2={60} y1={y} y2={y}
-                    stroke="var(--muted-foreground)"
-                    strokeWidth={1}
-                    opacity={0.4}
-                  />
+                  <line x1={54} x2={60} y1={y} y2={y} stroke="var(--muted-foreground)" strokeWidth={1} opacity={0.4} />
                 )}
               </g>
             )
           })}
 
-          {classNumbers.map((n, i) => {
-            const LANE_PADDING_LEFT = 60
-            const LANE_PADDING_RIGHT = 80
-            const laneWidth = (1000 - LANE_PADDING_LEFT - LANE_PADDING_RIGHT) / classNumbers.length
-            const laneCenter = LANE_PADDING_LEFT + laneWidth * i + laneWidth / 2
+          {/* Class labels at bottom (multi-class mode) */}
+          {!isSingleClass && classNumbers.map((n, i) => {
+            const laneWidth = 850 / classNumbers.length
+            const laneCenter = 70 + laneWidth * i + laneWidth / 2
             return (
               <text
                 key={n}
@@ -277,16 +279,18 @@ export function StudentLadder({ data }: Props) {
             )
           })}
 
+          {/* Dots */}
           {positioned.map((p, i) => {
             const isHovered = hovered === p.student.student.id
             const color = RISK_COLORS[p.student.result.risk]
+            const firstName = hebrewFirstName(p.student.student.fullName)
             return (
               <g
                 key={p.student.student.id}
                 className="cursor-pointer"
                 style={{
                   animation: `ladder-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both`,
-                  animationDelay: `${Math.min(i * 0.015, 1.2)}s`,
+                  animationDelay: `${Math.min(i * 0.02, 1.2)}s`,
                   transformOrigin: `${p.cx}px ${p.cy}px`,
                 }}
                 onMouseEnter={() => setHovered(p.student.student.id)}
@@ -294,17 +298,12 @@ export function StudentLadder({ data }: Props) {
                 onClick={() => router.push(`/student/${p.student.student.id}`)}
               >
                 {isHovered && (
-                  <circle
-                    cx={p.cx}
-                    cy={p.cy}
-                    r={16}
-                    fill={RISK_RING[p.student.result.risk]}
-                  />
+                  <circle cx={p.cx} cy={p.cy} r={16} fill={RISK_RING[p.student.result.risk]} />
                 )}
                 <circle
                   cx={p.cx}
                   cy={p.cy}
-                  r={isHovered ? 10 : 7}
+                  r={isHovered ? 10 : isSingleClass ? 9 : 7}
                   fill={color}
                   stroke="white"
                   strokeWidth={2}
@@ -315,26 +314,55 @@ export function StudentLadder({ data }: Props) {
                     transition: 'r 0.2s ease, filter 0.2s ease',
                   }}
                 />
+                {/* Score label above dot in single class */}
+                {isSingleClass && (
+                  <text
+                    x={p.cx}
+                    y={p.cy - 14}
+                    fill={color}
+                    fontSize={10}
+                    fontWeight={700}
+                    textAnchor="middle"
+                    dominantBaseline="auto"
+                    opacity={isHovered ? 1 : 0.85}
+                  >
+                    {p.student.result.score}
+                  </text>
+                )}
+                {/* Name below dot in single class */}
+                {isSingleClass && (
+                  <text
+                    x={0}
+                    y={0}
+                    transform={`translate(${p.cx}, ${LADDER_HEIGHT + 10}) rotate(-55)`}
+                    fill={color}
+                    fontSize={11}
+                    fontWeight={700}
+                    textAnchor="end"
+                    dominantBaseline="middle"
+                    opacity={isHovered ? 1 : 0.8}
+                  >
+                    {firstName}
+                  </text>
+                )}
               </g>
             )
           })}
         </svg>
 
+        {/* Hover tooltip */}
         {hoveredStudent && (
           <div
             className="pointer-events-none absolute z-10 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold shadow-clarity-lg"
             style={{
               right: `${(hoveredStudent.cx / 1000) * 100}%`,
-              top: `${(hoveredStudent.cy / LADDER_HEIGHT) * 100}%`,
+              top: `${(hoveredStudent.cy / svgHeight) * 100}%`,
               transform: 'translate(50%, -130%)',
               whiteSpace: 'nowrap',
             }}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: RISK_COLORS[hoveredStudent.student.result.risk] }}
-              />
+              <span className="w-2 h-2 rounded-full" style={{ background: RISK_COLORS[hoveredStudent.student.result.risk] }} />
               <span>{hoveredStudent.student.student.fullName}</span>
             </div>
             <div className="text-[10px] opacity-75 font-normal">
@@ -347,6 +375,7 @@ export function StudentLadder({ data }: Props) {
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <p className="font-medium">
           מוצגים <span className="text-foreground font-bold">{positioned.length}</span> מתוך {data.length} תלמידים
+          {isSingleClass && <span className="mr-1 opacity-70">· שמות מסודרים א–ת · ציון מעל לכל נקודה</span>}
         </p>
         <p className="opacity-70">לחץ על נקודה לפתיחת כרטיס תלמיד</p>
       </div>
