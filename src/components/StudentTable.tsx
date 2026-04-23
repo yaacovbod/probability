@@ -14,27 +14,31 @@ type Props = {
 type SortKey = 'fullName' | 'classGroup' | 'score' | 'lashon' | 'tanach' | 'history' | 'english' | 'math' | 'attendance'
 
 function riskBadge(risk: RiskLevel) {
-  const map: Record<RiskLevel, string> = {
-    'גבוה מאוד': 'bg-green-200 text-green-900',
-    'גבוה': 'bg-green-100 text-green-800',
-    'בינוני': 'bg-yellow-100 text-yellow-800',
-    'נמוך מאוד': 'bg-red-100 text-red-800',
+  const map: Record<RiskLevel, { bg: string; dot: string }> = {
+    'גבוה מאוד': { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+    'גבוה': { bg: 'bg-primary/10 text-primary border-primary/20', dot: 'bg-primary' },
+    'בינוני': { bg: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+    'נמוך מאוד': { bg: 'bg-destructive/10 text-destructive border-destructive/20', dot: 'bg-destructive' },
   }
-  return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${map[risk]}`}>{risk}</span>
+  const style = map[risk]
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${style.bg}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+      {risk}
+    </span>
+  )
 }
 
 function scoreCell(score: number) {
-  let color = 'text-red-600'
-  if (score >= 80) color = 'text-green-600'
-  else if (score >= 65) color = 'text-yellow-600'
-  else if (score >= 45) color = 'text-orange-500'
-  return <span className={`font-bold ${color}`}>{score}</span>
+  let color = 'text-destructive'
+  if (score >= 80) color = 'text-emerald-600'
+  else if (score >= 65) color = 'text-primary'
+  else if (score >= 45) color = 'text-amber-600'
+  return <span className={`text-lg font-black tabular-nums ${color}`}>{score}</span>
 }
 
-function rowBg(risk: RiskLevel): string {
-  if (risk === 'נמוך מאוד') return 'bg-red-50 hover:bg-red-100'
-  if (risk === 'בינוני') return 'bg-yellow-50 hover:bg-yellow-100'
-  return 'bg-green-50 hover:bg-green-100'
+function rowHover(): string {
+  return 'hover:bg-accent/40 transition-colors'
 }
 
 const CLASSES = ['הכל', 'יא1', 'יא2', 'יא3', 'יא4', 'יא5', 'יא6']
@@ -89,50 +93,52 @@ export function StudentTable({ data }: Props) {
   }
 
   function subjectCell(prob: number | null | undefined) {
-    if (prob === undefined || prob === null) return <span className="text-gray-300">—</span>
-    if (prob === 0) return <span className="text-red-500 font-bold">0%</span>
-    let color = 'text-red-500'
-    if (prob >= 80) color = 'text-green-600'
-    else if (prob >= 60) color = 'text-yellow-600'
-    else if (prob >= 40) color = 'text-orange-500'
-    return <span className={color}>{prob}%</span>
+    if (prob === undefined || prob === null) return <span className="text-muted-foreground/40">—</span>
+    if (prob === 0) return <span className="text-destructive font-bold">0%</span>
+    let color = 'text-destructive'
+    if (prob >= 80) color = 'text-emerald-600'
+    else if (prob >= 60) color = 'text-primary'
+    else if (prob >= 40) color = 'text-amber-600'
+    return <span className={`${color} font-semibold tabular-nums`}>{prob}%</span>
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-3 items-center">
         <Input
           placeholder="חיפוש לפי שם..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-48 text-right"
+          className="w-56 text-right rounded-full bg-muted/60 border-0 focus-visible:ring-2 focus-visible:ring-primary"
         />
         <Select value={classFilter} onValueChange={(v) => setClassFilter(v ?? 'הכל')}>
-          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-32 rounded-full bg-muted/60 border-0"><SelectValue /></SelectTrigger>
           <SelectContent>
             {CLASSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={riskFilter} onValueChange={(v) => setRiskFilter(v ?? 'הכל')}>
-          <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-40 rounded-full bg-muted/60 border-0"><SelectValue /></SelectTrigger>
           <SelectContent>
             {RISKS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
           </SelectContent>
         </Select>
-        <span className="text-sm text-gray-500">{filtered.length} תלמידים</span>
+        <span className="text-sm text-muted-foreground mr-auto">
+          <span className="font-bold text-foreground">{filtered.length}</span> תלמידים
+        </span>
       </div>
 
-      <div className="rounded-lg border overflow-x-auto">
+      <div className="rounded-2xl border border-border/60 bg-card shadow-clarity overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">ת"ז</TableHead>
+            <TableRow className="border-b border-border/60 hover:bg-transparent">
+              <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">ת"ז</TableHead>
               <Th k="fullName" label="שם" />
               <Th k="classGroup" label="כיתה" />
-              <TableHead className="text-right">חנ"מ</TableHead>
+              <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">חנ"מ</TableHead>
               <Th k="attendance" label="היעדרויות" />
-              <Th k="score" label="סיכוי" />
-              <TableHead className="text-right">סיכוי</TableHead>
+              <Th k="score" label="ציון" />
+              <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">סיכוי</TableHead>
               <Th k="lashon" label="לשון" />
               <Th k="tanach" label='תנ"ך' />
               <Th k="history" label="היסטוריה" />
@@ -146,17 +152,17 @@ export function StudentTable({ data }: Props) {
               return (
                 <TableRow
                   key={d.student.id}
-                  className={`${rowBg(d.result.risk)} cursor-pointer`}
+                  className={`${rowHover()} cursor-pointer border-b border-border/30 last:border-0`}
                   onClick={() => router.push(`/student/${d.student.id}`)}
                 >
-                  <TableCell className="text-gray-500 text-sm">{d.student.id}</TableCell>
-                  <TableCell className="font-medium">{d.student.fullName}</TableCell>
-                  <TableCell>יא{d.student.classGroup.replace(/.*?(\d+)$/, '$1')}</TableCell>
-                  <TableCell>{d.student.isSpecialEd ? '★' : ''}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs tabular-nums">{d.student.id}</TableCell>
+                  <TableCell className="font-bold">{d.student.fullName}</TableCell>
+                  <TableCell className="text-sm">יא{d.student.classGroup.replace(/.*?(\d+)$/, '$1')}</TableCell>
+                  <TableCell>{d.student.isSpecialEd ? <span className="text-amber-500">★</span> : ''}</TableCell>
                   <TableCell>
                     {absence !== null ? (
-                      <span className={absence > 25 ? 'text-red-600 font-bold' : ''}>{Math.round(absence)}%</span>
-                    ) : '—'}
+                      <span className={`tabular-nums ${absence > 25 ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>{Math.round(absence)}%</span>
+                    ) : <span className="text-muted-foreground/40">—</span>}
                   </TableCell>
                   <TableCell>{scoreCell(d.result.score)}</TableCell>
                   <TableCell>{riskBadge(d.result.risk)}</TableCell>
