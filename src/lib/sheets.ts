@@ -9,7 +9,7 @@ export type ParsedSheets = {
 
 function n(val: unknown): number | null {
   if (val === null || val === undefined || val === '') return null
-  const num = Number(val)
+  const num = Number(String(val).replace('%', '').trim())
   return isNaN(num) ? null : num
 }
 
@@ -75,7 +75,7 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
 
   const studentsRaw = rowsToObjects(studentsRows, 0)
   const bagrutRaw = rowsToObjects(bagrutRows, 1)
-  const schoolRaw = rowsToObjects(schoolRows, 2)
+  const schoolRaw = rowsToObjects(schoolRows, 0)
 
   const students: Student[] = studentsRaw.map(row => ({
     id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
