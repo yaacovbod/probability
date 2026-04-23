@@ -27,23 +27,23 @@ async function getSheetValues(sheetName: string): Promise<string[][]> {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
-    const name = searchParams.get('name') ?? ''
+    const id = searchParams.get('id') ?? ''
     const [bagrutRows, studentsRows] = await Promise.all([
       getSheetValues('ציוני_בגרות'),
       getSheetValues('תלמידים'),
     ])
 
-    const studentRow = studentsRows.find(r => r.join('').includes(name))
-    const studentId = studentRow ? String(studentRow[0] ?? studentRow[1] ?? '') : null
+    // list all students: id + name
+    const studentsList = studentsRows.slice(1).map(r => ({ id: r[0], name: r[1] }))
 
-    const bagrutRow = bagrutRows.find(r => r[0] && String(r[0]).trim() === (studentId ?? ''))
+    if (!id) {
+      return NextResponse.json({ students: studentsList, totalBagrut: bagrutRows.length })
+    }
 
-    return NextResponse.json({
-      studentRow,
-      studentId,
-      bagrutRow,
-      totalBagrut: bagrutRows.length,
-    })
+    const studentRow = studentsRows.find(r => String(r[0]).trim() === id)
+    const bagrutRow = bagrutRows.find(r => String(r[0]).trim() === id)
+
+    return NextResponse.json({ studentRow, bagrutRow, bagrutLength: bagrutRow?.length })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
   }
