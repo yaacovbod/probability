@@ -8,10 +8,10 @@ import { StudentTable } from '@/components/StudentTable'
 import { Button } from '@/components/ui/button'
 
 const RISK_COLORS: Record<string, string> = {
-  'נמוך': '#22c55e',
+  'גבוה': '#22c55e',
   'בינוני': '#eab308',
-  'גבוה': '#f97316',
-  'גבוה מאוד': '#ef4444',
+  'נמוך': '#f97316',
+  'נמוך מאוד': '#ef4444',
 }
 
 export default function DashboardPage() {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  const riskDist = ['נמוך', 'בינוני', 'גבוה', 'גבוה מאוד'].map(risk => ({
+  const riskDist = ['גבוה', 'בינוני', 'נמוך', 'נמוך מאוד'].map(risk => ({
     name: risk,
     value: data.filter(d => d.result.risk === risk).length,
   })).filter(r => r.value > 0)
@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="rounded-xl border bg-white p-4">
-          <h2 className="font-semibold mb-4 text-gray-700">התפלגות רמות סיכון</h2>
+          <h2 className="font-semibold mb-4 text-gray-700">התפלגות רמות סיכוי</h2>
           <div className="flex items-center gap-4">
             <ResponsiveContainer width="60%" height={200}>
               <PieChart>
@@ -95,7 +95,7 @@ export default function DashboardPage() {
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-2 text-sm">
-              {['נמוך', 'בינוני', 'גבוה', 'גבוה מאוד'].map(risk => {
+              {['גבוה', 'בינוני', 'נמוך', 'נמוך מאוד'].map(risk => {
                 const count = data.filter(d => d.result.risk === risk).length
                 if (count === 0) return null
                 return (

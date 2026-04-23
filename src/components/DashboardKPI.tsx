@@ -14,9 +14,9 @@ export function DashboardKPI({ data }: Props) {
 
   const cards = [
     { label: 'סה"כ תלמידים', value: total, color: 'text-gray-800', bg: 'bg-gray-50' },
-    { label: 'סיכון נמוך (80+)', value: low, color: 'text-green-700', bg: 'bg-green-50' },
-    { label: 'סיכון בינוני (65–79)', value: medium, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    { label: 'סיכון גבוה (מתחת 65)', value: high, color: 'text-red-700', bg: 'bg-red-50' },
+    { label: 'סיכוי גבוה (80+)', value: low, color: 'text-green-700', bg: 'bg-green-50' },
+    { label: 'סיכוי בינוני (65–79)', value: medium, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    { label: 'סיכוי נמוך (מתחת 65)', value: high, color: 'text-red-700', bg: 'bg-red-50' },
   ]
 
   return (
