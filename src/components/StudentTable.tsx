@@ -129,7 +129,7 @@ export function StudentTable({ data }: Props) {
               <TableHead className="text-right">ת"ז</TableHead>
               <Th k="fullName" label="שם" />
               <Th k="classGroup" label="כיתה" />
-              <TableHead className="text-right">חינ"מ</TableHead>
+              <TableHead className="text-right">חנ"מ</TableHead>
               <Th k="attendance" label="היעדרויות" />
               <Th k="score" label="סיכוי" />
               <TableHead className="text-right">סיכוי</TableHead>
