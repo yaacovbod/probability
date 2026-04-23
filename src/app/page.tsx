@@ -159,12 +159,12 @@ export default function DashboardPage() {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid rgba(8, 145, 178, 0.15)',
-                  boxShadow: '0 8px 32px -8px rgba(8, 145, 178, 0.2)',
+                  border: '1px solid rgba(124, 58, 237, 0.15)',
+                  boxShadow: '0 8px 32px -8px rgba(124, 58, 237, 0.2)',
                 }}
-                cursor={{ fill: 'rgba(8, 145, 178, 0.08)' }}
+                cursor={{ fill: 'rgba(124, 58, 237, 0.06)' }}
               />
-              <Bar dataKey="count" name="תלמידים" fill="#0891B2" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="count" name="תלמידים" fill="#7C3AED" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

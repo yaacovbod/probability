@@ -24,7 +24,7 @@ export function DashboardKPI({ data }: Props) {
   const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
 
   const cards: CardSpec[] = [
-    { label: 'סך הכל תלמידים', value: total, accent: '#0891B2', glow: 'rgba(8, 145, 178, 0.12)', icon: '◉', sub: 'שכבה יא׳' },
+    { label: 'סך הכל תלמידים', value: total, accent: '#7C3AED', glow: 'rgba(124, 58, 237, 0.12)', icon: '◉', sub: 'שכבה יא׳' },
     { label: 'סיכוי גבוה מאוד', value: veryHigh, accent: '#10B981', glow: 'rgba(16, 185, 129, 0.15)', icon: '▲', sub: `${pct(veryHigh)}% · ציון 85+` },
     { label: 'סיכוי גבוה', value: high2, accent: '#0891B2', glow: 'rgba(8, 145, 178, 0.15)', icon: '◆', sub: `${pct(high2)}% · ציון 70-84` },
     { label: 'סיכוי בינוני', value: mid, accent: '#F59E0B', glow: 'rgba(245, 158, 11, 0.18)', icon: '●', sub: `${pct(mid)}% · ציון 45-69` },
