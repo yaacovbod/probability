@@ -181,13 +181,17 @@ function calcS1(
   scores: BagrutScores,
   grades: SchoolGrades
 ): { s1: number; subjectProbs: ProbabilityResult['subjectProbs'] } {
+  const hasEngComponents = [scores.eng_A, scores.eng_B, scores.eng_C, scores.eng_D,
+    scores.eng_E, scores.eng_F, scores.eng_G, scores.eng_boost].some(v => v !== null)
+  const engFinal = (scores.eng_final === 0 && !hasEngComponents) ? null : scores.eng_final
+
   const sp: ProbabilityResult['subjectProbs'] = {
     lashon: probLashon(scores.lashon_exam, student, scores.lashon_school),
     tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, scores.tanach_school, scores.tanach_online),
     history: probHistory(scores.history_exam, student.isSpecialEd, scores.history_school, scores.history_online),
     civics: probSpirit(scores.civics_exam, student.isSpecialEd, scores.civics_school, scores.civics_online),
     literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online),
-    english: probEnglish(scores.eng_final, grades.english),
+    english: probEnglish(engFinal, grades.english),
     math: probMath(scores, grades.math),
     major: probMajor(scores),
   }
