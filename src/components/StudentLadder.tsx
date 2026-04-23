@@ -71,7 +71,7 @@ export function StudentLadder({ data }: Props) {
   const [riskFilter,  setRiskFilter]  = useState<'all' | RiskLevel>('all')
 
   const isSingleClass = classFilter !== 'all'
-  const svgHeight     = isSingleClass ? LADDER_HEIGHT + NAME_AREA : LADDER_HEIGHT
+  const svgHeight     = LADDER_HEIGHT
 
   const filtered = useMemo(() => data.filter(d => {
     if (classFilter !== 'all' && extractClassNumber(d.student.classGroup) !== classFilter) return false
@@ -295,41 +295,19 @@ export function StudentLadder({ data }: Props) {
                     textAnchor="middle" dominantBaseline="auto"
                   >{p.student.result.score}</text>
                 )}
-
-                {/* Name below dot — only in single-class, in NAME_AREA */}
-                {isSingleClass && (
-                  <text
-                    x={p.cx}
-                    y={LADDER_HEIGHT + 18}
-                    fill={color}
-                    fontSize={10}
-                    fontWeight={700}
-                    textAnchor="middle"
-                    dominantBaseline="hanging"
-                    style={{ fontFamily: 'Heebo, sans-serif' }}
-                  >{hebrewFirstName(p.student.student.fullName)}</text>
-                )}
               </g>
             )
           })}
-
-          {/* Thin separator line between ladder and name area */}
-          {isSingleClass && (
-            <line
-              x1={DOT_AREA_LEFT} x2={DOT_AREA_RIGHT} y1={LADDER_HEIGHT + 6} y2={LADDER_HEIGHT + 6}
-              stroke="rgba(148,163,184,0.2)" strokeWidth={1}
-            />
-          )}
         </svg>
 
-        {/* Hover tooltip */}
+        {/* Hover tooltip — centered above the dot */}
         {hoveredStudent && (
           <div
             className="pointer-events-none absolute z-10 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold shadow-clarity-lg"
             style={{
-              right: `${(hoveredStudent.cx / SVG_WIDTH) * 100}%`,
+              left: `${(hoveredStudent.cx / SVG_WIDTH) * 100}%`,
               top: `${(hoveredStudent.cy / svgHeight) * 100}%`,
-              transform: 'translate(50%, -130%)',
+              transform: 'translate(-50%, -130%)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -343,6 +321,33 @@ export function StudentLadder({ data }: Props) {
           </div>
         )}
       </div>
+
+      {/* Names strip — rendered as HTML below the SVG card in single-class mode */}
+      {isSingleClass && positioned.length > 0 && (
+        <div className="relative h-8 mt-1" dir="rtl">
+          {positioned.map(p => (
+            <button
+              key={p.student.student.id}
+              className="absolute text-center cursor-pointer hover:opacity-100 transition-opacity"
+              style={{
+                left: `${(p.cx / SVG_WIDTH) * 100}%`,
+                transform: 'translateX(-50%)',
+                color: RISK_COLORS[p.student.result.risk],
+                fontSize: 11,
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                top: 0,
+                opacity: hovered === p.student.student.id ? 1 : 0.8,
+              }}
+              onMouseEnter={() => setHovered(p.student.student.id)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => router.push(`/student/${p.student.student.id}`)}
+            >
+              {hebrewFirstName(p.student.student.fullName)}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <p className="font-medium">
