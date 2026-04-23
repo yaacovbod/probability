@@ -26,47 +26,14 @@ async function getSheetValues(sheetName: string): Promise<string[][]> {
 
 export async function GET() {
   try {
-    const [studentsRows, bagrutRows] = await Promise.all([
-      getSheetValues('תלמידים'),
-      getSheetValues('ציוני_בגרות'),
-    ])
-
-    // Build bagrut map by ID
-    const bagrutHeaders = (bagrutRows[1] ?? []).map((h: string) =>
-      (h ?? '').replace(/\r\n/g, '\n').trim()
-    )
-    const bagrutMap = new Map<string, Record<string, string>>()
-    for (const row of bagrutRows.slice(2)) {
-      const id = String(row[0] ?? '').trim()
-      if (!id) continue
-      const obj: Record<string, string> = {}
-      bagrutHeaders.forEach((h, i) => { obj[h] = row[i] ?? '' })
-      bagrutMap.set(id, obj)
-    }
-
-    // Check first 5 students
-    const studentSamples = studentsRows.slice(1, 6).map(row => {
-      const id = String(row[0] ?? '').trim()
-      const name = String(row[1] ?? '')
-      const bagrutRow = bagrutMap.get(id)
-      return {
-        id,
-        name,
-        foundInBagrut: !!bagrutRow,
-        lashonExam: bagrutRow?.['חיצוני\n70%'] ?? 'KEY_NOT_FOUND',
-        lashonSchool: bagrutRow?.['ב"ס\n30%'] ?? 'KEY_NOT_FOUND',
-        allBagrutKeys: bagrutRow ? Object.keys(bagrutRow).join(' | ') : null,
-      }
-    })
-
-    const studentIds = studentsRows.slice(1).map(r => String(r[0] ?? '').trim()).filter(Boolean)
-    const bagrutIds = bagrutRows.slice(2).map(r => String(r[0] ?? '').trim()).filter(Boolean)
-    const bagrutSet = new Set(bagrutIds)
-    const matched = studentIds.filter(id => bagrutSet.has(id)).length
+    const bagrutRows = await getSheetValues('ציוני_בגרות')
 
     return NextResponse.json({
-      idMatching: { totalStudents: studentIds.length, matchedInBagrut: matched },
-      studentSamples,
+      totalRows: bagrutRows.length,
+      row0: bagrutRows[0]?.slice(0, 10),
+      row1: bagrutRows[1]?.slice(0, 10),
+      row2: bagrutRows[2]?.slice(0, 10),
+      row3: bagrutRows[3]?.slice(0, 10),
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
