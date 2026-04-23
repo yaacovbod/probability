@@ -96,11 +96,6 @@ export default function DashboardPage() {
             מעקב אחרי סיכויי הצלחה של {data.length} תלמידים
           </p>
         </div>
-        <Link href="/upload">
-          <Button variant="outline" className="rounded-full border-border/60 hover:bg-accent hover:border-primary/30">
-            עדכון Excel
-          </Button>
-        </Link>
       </header>
 
       <DashboardKPI data={data} />
