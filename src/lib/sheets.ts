@@ -75,8 +75,8 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
 
   const studentsRaw = rowsToObjects(studentsRows, 0)
   const schoolRaw = rowsToObjects(schoolRows, 0)
-  // bagrut sheet has no column-header row — row 0 is merged category, data starts at row 1
-  const bagrutDataRows = bagrutRows.slice(1)
+  // row 0 = merged category, row 1 = column headers, data starts at row 2
+  const bagrutDataRows = bagrutRows.slice(2)
 
   const students: Student[] = studentsRaw.map(row => ({
     id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
