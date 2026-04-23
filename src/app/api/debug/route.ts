@@ -24,16 +24,25 @@ async function getSheetValues(sheetName: string): Promise<string[][]> {
   return data.values ?? []
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const bagrutRows = await getSheetValues('ציוני_בגרות')
+    const { searchParams } = new URL(req.url)
+    const name = searchParams.get('name') ?? ''
+    const [bagrutRows, studentsRows] = await Promise.all([
+      getSheetValues('ציוני_בגרות'),
+      getSheetValues('תלמידים'),
+    ])
+
+    const studentRow = studentsRows.find(r => r.join('').includes(name))
+    const studentId = studentRow ? String(studentRow[0] ?? studentRow[1] ?? '') : null
+
+    const bagrutRow = bagrutRows.find(r => r[0] && String(r[0]).trim() === (studentId ?? ''))
 
     return NextResponse.json({
-      totalRows: bagrutRows.length,
-      row0: bagrutRows[0]?.slice(0, 10),
-      row1: bagrutRows[1]?.slice(0, 10),
-      row2: bagrutRows[2]?.slice(0, 10),
-      row3: bagrutRows[3]?.slice(0, 10),
+      studentRow,
+      studentId,
+      bagrutRow,
+      totalBagrut: bagrutRows.length,
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
