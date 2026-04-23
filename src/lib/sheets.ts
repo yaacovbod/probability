@@ -75,7 +75,7 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
 
   const studentsRaw = rowsToObjects(studentsRows, 0)
   const bagrutRaw = rowsToObjects(bagrutRows, 1)
-  const schoolRaw = rowsToObjects(schoolRows, 0)
+  const schoolRaw = rowsToObjects(schoolRows, 2)
 
   const students: Student[] = studentsRaw.map(row => ({
     id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
@@ -128,15 +128,15 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
   })).filter(s => s.studentId && s.studentId !== 'undefined' && s.studentId !== '')
 
   const schoolGrades: SchoolGrades[] = schoolRaw.map(row => ({
-    studentId: String(row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
+    studentId: String(row['ת.ז'] ?? row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
     civics: n(row['אזרחות']),
-    english: n(row['אנגלית']),
+    english: n(row['אנגלית 5 יח"ל'] ?? row['אנגלית 4 יח"ל'] ?? row['אנגלית']),
     history: n(row['היסטוריה']),
-    hebrew: n(row['עברית'] ?? row["עב''ר"]),
-    math: n(row['מתמטיקה']),
+    hebrew: n(row['לשון'] ?? row['עברית'] ?? row["עב''ר"]),
+    math: n(row['מתמטיקה 5 יח"ל'] ?? row['מתמטיקה 4 יח"ל'] ?? row['מתמטיקה 3 יח"ל'] ?? row['מתמטיקה']),
     bible: n(row['תנ"ך'] ?? row['תנך']),
     literature: n(row['ספרות']),
-    pe: n(row['חינוך גופני']),
+    pe: n(row['חינוך גופני'] ?? row['חינוך גופני בנות'] ?? row['חינוך גופני בנים']),
   })).filter(s => s.studentId && s.studentId !== 'undefined' && s.studentId !== '')
 
   return { students, bagrutScores, schoolGrades }
