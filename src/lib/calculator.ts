@@ -79,7 +79,6 @@ export function probHistory(
     if (isSpecialEd) return null
     return 0
   }
-  if (isSpecialEd) return null
   return probSpirit(exam, false, schoolGrade, onlineGrade)
 }
 
