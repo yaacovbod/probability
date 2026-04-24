@@ -46,7 +46,14 @@ export default async function StudentPage({ params }: { params: { id: string } }
     bagrut.eng_A, bagrut.eng_B, bagrut.eng_C, bagrut.eng_D,
     bagrut.eng_E, bagrut.eng_F, bagrut.eng_G, bagrut.eng_boost,
   ].some(v => v !== null)
-  const engFinalDisplay = bagrut.eng_final === 0 && !hasEngComponents ? null : bagrut.eng_final
+
+  const engUnits = student.englishUnits
+  const engAllComplete =
+    engUnits === 3 ? [bagrut.eng_A, bagrut.eng_B, bagrut.eng_C, bagrut.eng_boost].every(v => v !== null) :
+    engUnits === 4 ? [bagrut.eng_C, bagrut.eng_D, bagrut.eng_E, bagrut.eng_boost].every(v => v !== null) :
+    engUnits === 5 ? [bagrut.eng_E, bagrut.eng_F, bagrut.eng_G, bagrut.eng_boost].every(v => v !== null) :
+    false
+  const engFinalDisplay = engAllComplete ? bagrut.eng_final : null
 
   const bagrutSections: { title: string; rows: { label: string; value: number | null }[] }[] = [
     {
