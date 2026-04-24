@@ -38,12 +38,6 @@ export default async function DashboardPage() {
             מעקב אחרי סיכויי הצלחה של {data.length} תלמידים
           </p>
         </div>
-        <Link href="/upload">
-          <Button variant="outline" className="rounded-full gap-2 shrink-0">
-            <span>⬆</span>
-            עדכן Excel
-          </Button>
-        </Link>
       </header>
 
       <DraggableDashboard data={data} />
