@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { StudentFullData, SubjectProbs } from '@/lib/types'
+import { BagrutScores, StudentFullData, SubjectProbs } from '@/lib/types'
 import { EXAM_SCHEDULE, daysUntil } from '@/lib/exam-schedule'
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
 
 type ExamGroup = {
   subject: keyof SubjectProbs
+  bagrutField?: keyof BagrutScores
   label: string
   round: 'א' | 'ב'
   firstDate: Date
@@ -44,15 +45,19 @@ export function ExamCountdown({ data }: Props) {
         if (aDate && daysUntil(aDate) >= 0) continue
       }
 
-      const key = `${exam.subject}-${exam.round}`
+      // Major exams: each title gets its own card; others: group by subject
+      const key = exam.bagrutField ? `${exam.title}-${exam.round}` : `${exam.subject}-${exam.round}`
       if (!map.has(key)) {
-        const withData = data.filter(s => s.result.subjectProbs[exam.subject] !== null)
+        const withData = exam.bagrutField
+          ? data.filter(s => s.bagrut[exam.bagrutField!] !== null)
+          : data.filter(s => s.result.subjectProbs[exam.subject] !== null)
         const atRisk = withData
           .filter(s => (s.result.subjectProbs[exam.subject] ?? 0) < 60)
           .sort((a, b) => (a.result.subjectProbs[exam.subject] ?? 0) - (b.result.subjectProbs[exam.subject] ?? 0))
         const passing = withData.filter(s => (s.result.subjectProbs[exam.subject] ?? 0) >= 60).length
         map.set(key, {
           subject: exam.subject,
+          bagrutField: exam.bagrutField,
           label: exam.label,
           round: exam.round,
           firstDate: exam.date,
