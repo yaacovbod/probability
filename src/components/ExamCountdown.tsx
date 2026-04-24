@@ -49,7 +49,10 @@ export function ExamCountdown({ data }: Props) {
       const key = exam.bagrutField ? `${exam.title}-${exam.round}` : `${exam.subject}-${exam.round}`
       if (!map.has(key)) {
         const withData = exam.schoolMajorKey
-          ? data.filter(s => s.school.majorSubject === exam.schoolMajorKey)
+          ? data.filter(s =>
+              s.student.majorName === exam.schoolMajorKey ||
+              (!s.student.majorName && s.school.majorSubject === exam.schoolMajorKey)
+            )
           : exam.bagrutField
             ? data.filter(s => s.bagrut[exam.bagrutField!] !== null)
             : data.filter(s => s.result.subjectProbs[exam.subject] !== null)

@@ -11,7 +11,20 @@ export function bool(val: unknown): boolean {
   return String(val).trim() === 'כן' || val === true || val === 1
 }
 
+const MAJOR_NAME_MAP: Record<string, string> = {
+  'ניהול עסקי ויזמות': 'ניהול עסקי',
+  'ניהול עסקי - יזמות': 'ניהול עסקי',
+  'מוט"ל': 'מוטל',
+}
+
+function normalizeMajorName(raw: string | null): string | null {
+  if (!raw) return null
+  const trimmed = raw.trim()
+  return (MAJOR_NAME_MAP[trimmed] ?? trimmed) || null
+}
+
 export function parseStudentRow(row: Record<string, unknown>): Student {
+  const rawMajor = String(row['מגמה'] ?? row['מגמת לימוד'] ?? row['מגמה/מסלול'] ?? '').trim()
   return {
     id: String(row['תעודת זהות'] ?? row['ת"ז'] ?? row['תז'] ?? ''),
     fullName: String(row['שם מלא'] ?? ''),
@@ -22,6 +35,7 @@ export function parseStudentRow(row: Record<string, unknown>): Student {
     mathUnits: n(row['יח"ל מתמטיקה'] ?? row['יח"ל מת']) as 3 | 4 | 5 | null,
     englishUnits: n(row['יח"ל אנגלית'] ?? row['יח"ל אנג']) as 3 | 4 | 5 | null,
     notes: String(row['הערות'] ?? ''),
+    majorName: normalizeMajorName(rawMajor || null),
   }
 }
 
@@ -49,7 +63,7 @@ export function parseSchoolGradesRow(row: Record<string, unknown>): SchoolGrades
         ['אומנות', n(row['אומנות'])],
         ['מדעי המחשב', n(row['מדעי המחשב'])],
         ['מידע ונתונים', n(row['מידע ונתונים'])],
-        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות'])],
+        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות']) ?? n(row['ניהול עסקי ויזמות'])],
         ['פיזיקה', n(row['פיזיקה'])],
         ['פסיכולוגיה', n(row['פסיכולוגיה'])],
         ['תקשורת', n(row['תקשורת'])],
@@ -63,7 +77,7 @@ export function parseSchoolGradesRow(row: Record<string, unknown>): SchoolGrades
         ['אומנות', n(row['אומנות'])],
         ['מדעי המחשב', n(row['מדעי המחשב'])],
         ['מידע ונתונים', n(row['מידע ונתונים'])],
-        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות'])],
+        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות']) ?? n(row['ניהול עסקי ויזמות'])],
         ['פיזיקה', n(row['פיזיקה'])],
         ['פסיכולוגיה', n(row['פסיכולוגיה'])],
         ['תקשורת', n(row['תקשורת'])],

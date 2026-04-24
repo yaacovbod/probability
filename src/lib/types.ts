@@ -8,6 +8,7 @@ export type Student = {
   mathUnits: 3 | 4 | 5 | null
   englishUnits: 3 | 4 | 5 | null
   notes: string
+  majorName: string | null
 }
 
 export type BagrutScores = {
