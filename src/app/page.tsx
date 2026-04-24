@@ -1,12 +1,6 @@
 import Link from 'next/link'
 import { getStudentsData } from '@/lib/data'
-import { DashboardKPI } from '@/components/DashboardKPI'
-import { RiskCharts } from '@/components/RiskCharts'
-import { StudentsView } from '@/components/StudentsView'
-import { BorderlineStudents } from '@/components/BorderlineStudents'
-import { ExamCountdown } from '@/components/ExamCountdown'
-import { SubjectSummary } from '@/components/SubjectSummary'
-import { ClassComparison } from '@/components/ClassComparison'
+import { DraggableDashboard } from '@/components/DraggableDashboard'
 import { Button } from '@/components/ui/button'
 
 export const revalidate = 60
@@ -52,13 +46,7 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      <DashboardKPI data={data} />
-      <ExamCountdown data={data} />
-      <RiskCharts data={data} />
-      <BorderlineStudents data={data} />
-      <SubjectSummary data={data} />
-      <ClassComparison data={data} />
-      <StudentsView data={data} />
+      <DraggableDashboard data={data} />
     </main>
   )
 }
