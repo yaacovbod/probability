@@ -4,6 +4,7 @@ import { DashboardKPI } from '@/components/DashboardKPI'
 import { RiskCharts } from '@/components/RiskCharts'
 import { StudentsView } from '@/components/StudentsView'
 import { BorderlineStudents } from '@/components/BorderlineStudents'
+import { ExamCountdown } from '@/components/ExamCountdown'
 import { SubjectSummary } from '@/components/SubjectSummary'
 import { ClassComparison } from '@/components/ClassComparison'
 import { Button } from '@/components/ui/button'
@@ -52,6 +53,7 @@ export default async function DashboardPage() {
       </header>
 
       <DashboardKPI data={data} />
+      <ExamCountdown data={data} />
       <RiskCharts data={data} />
       <BorderlineStudents data={data} />
       <SubjectSummary data={data} />
