@@ -110,9 +110,5 @@
   @page { margin: 8mm; size: A4 portrait; }
 
   /* Scale student card to fit one page */
-  main {
-    transform: scale(0.78);
-    transform-origin: top right;
-    width: calc(100% / 0.78);
-  }
+  main { zoom: 0.72; }
 }
