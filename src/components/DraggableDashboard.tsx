@@ -15,7 +15,7 @@ type SectionId = 'kpi' | 'countdown' | 'riskcharts' | 'borderline' | 'subject' |
 const DEFAULT_ORDER: SectionId[] = ['kpi', 'countdown', 'riskcharts', 'borderline', 'subject', 'class', 'students']
 
 const SECTION_LABELS: Record<SectionId, string> = {
-  kpi: 'סיכום KPI',
+  kpi: 'סיכום',
   countdown: 'ספירה לאחור לבגרויות',
   riskcharts: 'גרפי סיכון',
   borderline: 'תלמידים בגבול',
@@ -106,8 +106,24 @@ export function DraggableDashboard({ data }: Props) {
     }
   }
 
+  const allOpen = order.every(id => open[id])
+
+  const toggleAll = () => {
+    const newOpen = Object.fromEntries(DEFAULT_ORDER.map(id => [id, !allOpen])) as Record<SectionId, boolean>
+    localStorage.setItem(STORAGE_OPEN_KEY, JSON.stringify(newOpen))
+    setOpen(newOpen)
+  }
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          onClick={toggleAll}
+          className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full border border-border/50 hover:border-border bg-card"
+        >
+          {allOpen ? 'סגור הכל' : 'פתח הכל'}
+        </button>
+      </div>
       {order.map(id => {
         const isDraggingThis = dragging === id
         const isDragTarget = dragOver === id && dragging !== id
