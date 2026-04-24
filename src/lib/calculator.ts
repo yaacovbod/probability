@@ -111,24 +111,71 @@ export function probHistory(
   return probSpirit(exam, false, schoolGrade, onlineGrade, reportGrade)
 }
 
+function engFinalFromComponents(scores: BagrutScores, units: 3 | 4 | 5 | null): number | null {
+  // B (3-unit), D (4-unit), F (5-unit) are school-controlled → guaranteed ≥85
+  if (units === 3) {
+    return weightedNorm([
+      [scores.eng_A,             0.27],
+      [scores.eng_B ?? 85,       0.26],
+      [scores.eng_C,             0.27],
+      [scores.eng_boost,         0.20],
+    ])
+  }
+  if (units === 4) {
+    return weightedNorm([
+      [scores.eng_C,             0.27],
+      [scores.eng_D ?? 85,       0.26],
+      [scores.eng_E,             0.27],
+      [scores.eng_boost,         0.20],
+    ])
+  }
+  if (units === 5) {
+    return weightedNorm([
+      [scores.eng_E,             0.27],
+      [scores.eng_F ?? 85,       0.26],
+      [scores.eng_G,             0.27],
+      [scores.eng_boost,         0.20],
+    ])
+  }
+  return null
+}
+
+function engScoreToProb(score: number): number {
+  if (score >= 70) return 100
+  if (score >= 55) return 95  // passed ≥55 — near-certain
+  if (score >= 50) return 55
+  if (score >= 45) return 30
+  return 10
+}
+
 export function probEnglish(
-  engFinal: number | null,
+  scores: BagrutScores,
+  englishUnits: 3 | 4 | 5 | null,
   schoolEnglish: number | null
 ): number | null {
-  if (engFinal === null) {
-    if (schoolEnglish === null) return null
-    if (schoolEnglish >= 85) return 90
-    if (schoolEnglish >= 75) return 80
-    if (schoolEnglish >= 65) return 65
-    if (schoolEnglish >= 55) return 50
-    return 30
+  const hasComponents = [
+    scores.eng_A, scores.eng_B, scores.eng_C, scores.eng_D,
+    scores.eng_E, scores.eng_F, scores.eng_G, scores.eng_boost,
+  ].some(v => v !== null)
+
+  // Compute from specific components based on unit level
+  const computed = engFinalFromComponents(scores, englishUnits)
+  if (computed !== null) return engScoreToProb(computed)
+
+  // Fall back to sheet-computed final (only if it's not a spurious 0)
+  const sheetFinal = scores.eng_final === 0 && !hasComponents ? null : scores.eng_final
+  if (sheetFinal !== null) {
+    if (sheetFinal === 0) return 0
+    return engScoreToProb(sheetFinal)
   }
-  if (engFinal === 0) return 0
-  if (engFinal >= 70) return 100
-  if (engFinal >= 55) return 95  // passed ≥55 — near-certain
-  if (engFinal >= 50) return 55
-  if (engFinal >= 45) return 30
-  return 10
+
+  // No bagrut data — estimate from school grade
+  if (schoolEnglish === null) return null
+  if (schoolEnglish >= 85) return 90
+  if (schoolEnglish >= 75) return 80
+  if (schoolEnglish >= 65) return 65
+  if (schoolEnglish >= 55) return 50
+  return 30
 }
 
 function weightedNorm(parts: [number | null, number][]): number | null {
@@ -173,9 +220,9 @@ export function probMath(scores: BagrutScores, schoolMath: number | null): numbe
 
   if (firstOnly) {
     const first = scores.math_35173!
-    if (first >= 85) return 85
-    if (first >= 70) return 70
-    if (first >= 55) return 55
+    if (first >= 85) return 95  // strong first exam → very likely to pass
+    if (first >= 70) return 80
+    if (first >= 55) return 60
     if (first >= 45) return 35
     return 15
   }
@@ -226,17 +273,13 @@ function calcS1(
   scores: BagrutScores,
   grades: SchoolGrades
 ): { s1: number; subjectProbs: ProbabilityResult['subjectProbs'] } {
-  const hasEngComponents = [scores.eng_A, scores.eng_B, scores.eng_C, scores.eng_D,
-    scores.eng_E, scores.eng_F, scores.eng_G, scores.eng_boost].some(v => v !== null)
-  const engFinal = (scores.eng_final === 0 && !hasEngComponents) ? null : scores.eng_final
-
   const sp: ProbabilityResult['subjectProbs'] = {
     lashon: probLashon(scores.lashon_exam, student, scores.lashon_school, grades.hebrew),
     tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, scores.tanach_school, scores.tanach_online, grades.bible),
     history: probHistory(scores.history_exam, student.isSpecialEd, scores.history_school, scores.history_online, grades.history),
     civics: probSpirit(scores.civics_exam, student.isSpecialEd, scores.civics_school, scores.civics_online, grades.civics),
     literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online, grades.literature),
-    english: probEnglish(engFinal, grades.english),
+    english: probEnglish(scores, student.englishUnits, grades.english),
     math: probMath(scores, grades.math),
     major: probMajor(scores, grades.major),
   }
