@@ -160,6 +160,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
   ]
 
   const renderedAt = new Date().toLocaleString('he-IL', {
+    timeZone: 'Asia/Jerusalem',
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
