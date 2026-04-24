@@ -9,14 +9,16 @@ import { ExamCountdown } from '@/components/ExamCountdown'
 import { SubjectSummary } from '@/components/SubjectSummary'
 import { ClassComparison } from '@/components/ClassComparison'
 import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
+import { NoMajorStudents } from '@/components/NoMajorStudents'
 
-type SectionId = 'kpi' | 'countdown' | 'riskcharts' | 'borderline' | 'subject' | 'class' | 'students'
+type SectionId = 'kpi' | 'countdown' | 'riskcharts' | 'borderline' | 'subject' | 'class' | 'students' | 'nomajor'
 
-const DEFAULT_ORDER: SectionId[] = ['kpi', 'countdown', 'riskcharts', 'borderline', 'subject', 'class', 'students']
+const DEFAULT_ORDER: SectionId[] = ['kpi', 'countdown', 'nomajor', 'riskcharts', 'borderline', 'subject', 'class', 'students']
 
 const SECTION_LABELS: Record<SectionId, string> = {
   kpi: 'סיכום',
   countdown: 'ספירה לאחור לבגרויות',
+  nomajor: 'תלמידים ללא מגמה',
   riskcharts: 'גרפי סיכון',
   borderline: 'תלמידים בגבול',
   subject: 'סיכום מקצועות',
@@ -98,6 +100,7 @@ export function DraggableDashboard({ data }: Props) {
     switch (id) {
       case 'kpi':        return <DashboardKPI data={data} />
       case 'countdown':  return <ExamCountdown data={data} />
+      case 'nomajor':    return <NoMajorStudents data={data} />
       case 'riskcharts': return <RiskCharts data={data} />
       case 'borderline': return <BorderlineStudents data={data} />
       case 'subject':    return <SubjectSummary data={data} />
