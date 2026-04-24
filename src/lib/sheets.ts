@@ -105,9 +105,16 @@ export async function fetchSheetsData(): Promise<ParsedSheets> {
       literature_exam: n(row[36]),
       literature_school: n(row[37]),
       major_bio: n(row[39]),
-      major_motal: n(row[40]),
-      major_languages: n(row[41]),
-      major_other: n(row[42]),
+      major_psychology: n(row[40]),
+      major_physics: n(row[41]),
+      major_data: n(row[42]),
+      major_art: n(row[43]),
+      major_communication: n(row[44]),
+      major_chemistry: n(row[45]),
+      major_cs: n(row[46]),
+      major_business: n(row[47]),
+      major_motal: n(row[48]),
+      major_languages: n(row[49]),
     }))
 
   const schoolGrades = schoolRaw.map(parseSchoolGradesRow).filter(s => s.studentId && s.studentId !== 'undefined' && s.studentId !== '')

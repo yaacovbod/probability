@@ -14,7 +14,9 @@ const emptyBagrut = (id: string): BagrutScores => ({
   literature_online: null, literature_exam: null, literature_school: null,
   eng_A: null, eng_B: null, eng_C: null, eng_D: null,
   eng_E: null, eng_F: null, eng_G: null, eng_boost: null, eng_final: null,
-  major_bio: null, major_motal: null, major_languages: null, major_other: null,
+  major_bio: null, major_psychology: null, major_physics: null, major_data: null,
+  major_art: null, major_communication: null, major_chemistry: null,
+  major_cs: null, major_business: null, major_motal: null, major_languages: null,
 })
 
 const emptySchool = (id: string): SchoolGrades => ({

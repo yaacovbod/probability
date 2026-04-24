@@ -67,10 +67,17 @@ export function parseExcel(buffer: ArrayBuffer): ParsedExcel {
     eng_G: n(row['שאלון G\n27%'] ?? row['מרכיב G\n27%'] ?? row['שאלון G'] ?? row['מרכיב G']),
     eng_boost: n(row['Boost\n20%'] ?? row['Boost']),
     eng_final: n(row['אנגלית\nסופי'] ?? row['אנגלית\nציון\nסופי'] ?? row['אנגלית ציון']),
-    major_bio: n(row['ביולוגיה\nסופי'] ?? row['ביולוגיה\nציון'] ?? row['ביולוגיה']),
-    major_motal: n(row['מוט"ל\nסופי'] ?? row['מוט"ל\nציון'] ?? row['מוט"ל']),
-    major_languages: n(row['שפות\nסופי'] ?? row['שפות\nציון'] ?? row['שפות']),
-    major_other: n(row['מגמה אחרת\nסופי'] ?? row['אחר\nציון'] ?? row['אחר']),
+    major_bio: n(row['ביולוגיה\nסופי'] ?? row['ביולוגיה']),
+    major_psychology: n(row['פסיכולוגיה\nסופי'] ?? row['פסיכולוגיה']),
+    major_physics: n(row['פיזיקה\nסופי'] ?? row['פיזיקה']),
+    major_data: n(row['מידע ונתונים\nסופי'] ?? row['מידע ונתונים']),
+    major_art: n(row['אומנות\nסופי'] ?? row['אומנות']),
+    major_communication: n(row['תקשורת\nסופי'] ?? row['תקשורת']),
+    major_chemistry: n(row['כימיה\nסופי'] ?? row['כימיה']),
+    major_cs: n(row['מדעי המחשב\nסופי'] ?? row['מדעי המחשב']),
+    major_business: n(row['ניהול עסקי\nסופי'] ?? row['ניהול עסקי\n- יזמות\nסופי'] ?? row['ניהול עסקי']),
+    major_motal: n(row['מוט"ל\nסופי'] ?? row['מוט"ל']),
+    major_languages: n(row['שפות\nסופי'] ?? row['שפות']),
   })}).filter(s => s.studentId && s.studentId !== 'undefined')
 
   const schoolGrades = schoolRaw.map(parseSchoolGradesRow).filter(s => s.studentId && s.studentId !== 'undefined')

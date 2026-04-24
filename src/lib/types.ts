@@ -44,9 +44,16 @@ export type BagrutScores = {
   eng_boost: number | null
   eng_final: number | null
   major_bio: number | null
+  major_psychology: number | null
+  major_physics: number | null
+  major_data: number | null
+  major_art: number | null
+  major_communication: number | null
+  major_chemistry: number | null
+  major_cs: number | null
+  major_business: number | null
   major_motal: number | null
   major_languages: number | null
-  major_other: number | null
 }
 
 export type SchoolGrades = {

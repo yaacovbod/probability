@@ -186,7 +186,11 @@ export function probMath(scores: BagrutScores, schoolMath: number | null): numbe
 }
 
 export function probMajor(scores: BagrutScores, schoolMajor: number | null = null): number | null {
-  const majors = [scores.major_bio, scores.major_motal, scores.major_languages, scores.major_other]
+  const majors = [
+    scores.major_bio, scores.major_psychology, scores.major_physics, scores.major_data,
+    scores.major_art, scores.major_communication, scores.major_chemistry,
+    scores.major_cs, scores.major_business, scores.major_motal, scores.major_languages,
+  ]
   const hasBagrutData = majors.some(m => m !== null && m > 0)
 
   if (hasBagrutData) {
