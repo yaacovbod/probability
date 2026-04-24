@@ -33,12 +33,25 @@ const PASS = {
 } as const
 
 
+function probFromReport(grade: number | null): number | null {
+  if (grade === null) return null
+  if (grade >= 85) return 90
+  if (grade >= 75) return 80
+  if (grade >= 65) return 65
+  if (grade >= 55) return 50
+  return 30
+}
+
 export function probLashon(
   exam: number | null,
   student: Student,
-  schoolGrade: number | null = null
+  schoolGrade: number | null = null,
+  reportGrade: number | null = null
 ): number | null {
-  if (exam === null) return null
+  if (exam === null) {
+    if (student.isLateJoinerLashon) return null
+    return probFromReport(reportGrade)
+  }
   if (exam === 0) {
     if (student.isLateJoinerLashon) return null
     if (student.isSpecialEd) return GUARANTEED.specialEdLashon
@@ -65,9 +78,10 @@ export function probSpirit(
   exam: number | null,
   isSpecialEd: boolean,
   schoolGrade: number | null = null,
-  onlineGrade: number | null = null
+  onlineGrade: number | null = null,
+  reportGrade: number | null = null
 ): number | null {
-  if (exam === null) return null
+  if (exam === null) return probFromReport(reportGrade)
   if (exam === 0) {
     if (isSpecialEd) return null
     return 0
@@ -86,14 +100,15 @@ export function probHistory(
   exam: number | null,
   isSpecialEd: boolean,
   schoolGrade: number | null = null,
-  onlineGrade: number | null = null
+  onlineGrade: number | null = null,
+  reportGrade: number | null = null
 ): number | null {
-  if (exam === null) return null
+  if (exam === null) return probFromReport(reportGrade)
   if (exam === 0) {
     if (isSpecialEd) return null
     return 0
   }
-  return probSpirit(exam, false, schoolGrade, onlineGrade)
+  return probSpirit(exam, false, schoolGrade, onlineGrade, reportGrade)
 }
 
 export function probEnglish(
@@ -206,11 +221,11 @@ function calcS1(
   const engFinal = (scores.eng_final === 0 && !hasEngComponents) ? null : scores.eng_final
 
   const sp: ProbabilityResult['subjectProbs'] = {
-    lashon: probLashon(scores.lashon_exam, student, scores.lashon_school),
-    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, scores.tanach_school, scores.tanach_online),
-    history: probHistory(scores.history_exam, student.isSpecialEd, scores.history_school, scores.history_online),
-    civics: probSpirit(scores.civics_exam, student.isSpecialEd, scores.civics_school, scores.civics_online),
-    literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online),
+    lashon: probLashon(scores.lashon_exam, student, scores.lashon_school, grades.hebrew),
+    tanach: probSpirit(scores.tanach_exam, student.isSpecialEd, scores.tanach_school, scores.tanach_online, grades.bible),
+    history: probHistory(scores.history_exam, student.isSpecialEd, scores.history_school, scores.history_online, grades.history),
+    civics: probSpirit(scores.civics_exam, student.isSpecialEd, scores.civics_school, scores.civics_online, grades.civics),
+    literature: probSpirit(scores.literature_exam, student.isSpecialEd, scores.literature_school, scores.literature_online, grades.literature),
     english: probEnglish(engFinal, grades.english),
     math: probMath(scores, grades.math),
     major: probMajor(scores, grades.major),
