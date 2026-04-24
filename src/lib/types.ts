@@ -59,6 +59,7 @@ export type SchoolGrades = {
   literature: number | null
   pe: number | null
   major: number | null
+  majorSubject: string | null
 }
 
 export type RiskLevel = 'גבוה מאוד' | 'גבוה' | 'בינוני' | 'נמוך מאוד'

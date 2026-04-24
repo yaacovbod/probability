@@ -20,7 +20,7 @@ const emptyBagrut = (id: string): BagrutScores => ({
 const emptySchool = (id: string): SchoolGrades => ({
   studentId: id,
   civics: null, english: null, history: null, hebrew: null,
-  math: null, bible: null, literature: null, pe: null, major: null,
+  math: null, bible: null, literature: null, pe: null, major: null, majorSubject: null,
 })
 
 export const getStudentsData = cache(async (): Promise<StudentFullData[]> => {

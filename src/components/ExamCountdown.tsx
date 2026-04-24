@@ -48,9 +48,11 @@ export function ExamCountdown({ data }: Props) {
       // Major exams: each title gets its own card; others: group by subject
       const key = exam.bagrutField ? `${exam.title}-${exam.round}` : `${exam.subject}-${exam.round}`
       if (!map.has(key)) {
-        const withData = exam.bagrutField
-          ? data.filter(s => s.bagrut[exam.bagrutField!] !== null)
-          : data.filter(s => s.result.subjectProbs[exam.subject] !== null)
+        const withData = exam.schoolMajorKey
+          ? data.filter(s => s.school.majorSubject === exam.schoolMajorKey)
+          : exam.bagrutField
+            ? data.filter(s => s.bagrut[exam.bagrutField!] !== null)
+            : data.filter(s => s.result.subjectProbs[exam.subject] !== null)
         const atRisk = withData
           .filter(s => (s.result.subjectProbs[exam.subject] ?? 0) < 60)
           .sort((a, b) => (a.result.subjectProbs[exam.subject] ?? 0) - (b.result.subjectProbs[exam.subject] ?? 0))

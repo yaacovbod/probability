@@ -44,12 +44,32 @@ export function parseSchoolGradesRow(row: Record<string, unknown>): SchoolGrades
     literature: n(row['ספרות']),
     pe: n(row['חינוך גופני'] ?? row['חינוך גופני בנות'] ?? row['חינוך גופני בנים']),
     major: (() => {
-      const vals = [
-        n(row['ביולוגיה']), n(row['אומנות']), n(row['מדעי המחשב']),
-        n(row['מידע ונתונים']), n(row['ניהול עסקי']), n(row['ניהול עסקי - יזמות']),
-        n(row['פיזיקה']), n(row['פסיכולוגיה']), n(row['תקשורת']),
-      ].filter((v): v is number => v !== null)
-      return vals.length > 0 ? Math.max(...vals) : null
+      const entries: [string, number | null][] = [
+        ['ביולוגיה', n(row['ביולוגיה'])],
+        ['אומנות', n(row['אומנות'])],
+        ['מדעי המחשב', n(row['מדעי המחשב'])],
+        ['מידע ונתונים', n(row['מידע ונתונים'])],
+        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות'])],
+        ['פיזיקה', n(row['פיזיקה'])],
+        ['פסיכולוגיה', n(row['פסיכולוגיה'])],
+        ['תקשורת', n(row['תקשורת'])],
+      ]
+      const withGrade = entries.filter(([, v]) => v !== null) as [string, number][]
+      return withGrade.length > 0 ? Math.max(...withGrade.map(([, v]) => v)) : null
+    })(),
+    majorSubject: (() => {
+      const entries: [string, number | null][] = [
+        ['ביולוגיה', n(row['ביולוגיה'])],
+        ['אומנות', n(row['אומנות'])],
+        ['מדעי המחשב', n(row['מדעי המחשב'])],
+        ['מידע ונתונים', n(row['מידע ונתונים'])],
+        ['ניהול עסקי', n(row['ניהול עסקי']) ?? n(row['ניהול עסקי - יזמות'])],
+        ['פיזיקה', n(row['פיזיקה'])],
+        ['פסיכולוגיה', n(row['פסיכולוגיה'])],
+        ['תקשורת', n(row['תקשורת'])],
+      ]
+      const found = entries.find(([, v]) => v !== null)
+      return found ? found[0] : null
     })(),
   }
 }
