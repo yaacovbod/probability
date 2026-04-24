@@ -313,6 +313,7 @@ function calcS1(
 
 function hasMathExam(scores: BagrutScores): boolean {
   return (
+    scores.math_35173 !== null ||
     scores.math_35371 !== null || scores.math_35372 !== null ||
     scores.math_35471 !== null || scores.math_35472 !== null ||
     scores.math_35571 !== null || scores.math_35572 !== null
