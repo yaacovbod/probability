@@ -42,6 +42,12 @@ export default async function StudentPage({ params }: { params: { id: string } }
   const absence = student.attendanceAbsencePct
   const presence = absence !== null ? Math.round(100 - absence) : null
 
+  const hasEngComponents = [
+    bagrut.eng_A, bagrut.eng_B, bagrut.eng_C, bagrut.eng_D,
+    bagrut.eng_E, bagrut.eng_F, bagrut.eng_G, bagrut.eng_boost,
+  ].some(v => v !== null)
+  const engFinalDisplay = bagrut.eng_final === 0 && !hasEngComponents ? null : bagrut.eng_final
+
   const bagrutSections: { title: string; rows: { label: string; value: number | null }[] }[] = [
     {
       title: 'לשון',
@@ -93,7 +99,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: 'שאלון F', value: bagrut.eng_F },
         { label: 'שאלון G', value: bagrut.eng_G },
         { label: 'Boost', value: bagrut.eng_boost },
-        { label: 'ציון סופי', value: bagrut.eng_final },
+        { label: 'ציון סופי', value: engFinalDisplay },
       ],
     },
     {
