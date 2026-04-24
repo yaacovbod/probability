@@ -3,6 +3,9 @@ import { getStudentsData } from '@/lib/data'
 import { DashboardKPI } from '@/components/DashboardKPI'
 import { RiskCharts } from '@/components/RiskCharts'
 import { StudentsView } from '@/components/StudentsView'
+import { BorderlineStudents } from '@/components/BorderlineStudents'
+import { SubjectSummary } from '@/components/SubjectSummary'
+import { ClassComparison } from '@/components/ClassComparison'
 import { Button } from '@/components/ui/button'
 
 export const revalidate = 60
@@ -40,10 +43,19 @@ export default async function DashboardPage() {
             מעקב אחרי סיכויי הצלחה של {data.length} תלמידים
           </p>
         </div>
+        <Link href="/upload">
+          <Button variant="outline" className="rounded-full gap-2 shrink-0">
+            <span>⬆</span>
+            עדכן Excel
+          </Button>
+        </Link>
       </header>
 
       <DashboardKPI data={data} />
       <RiskCharts data={data} />
+      <BorderlineStudents data={data} />
+      <SubjectSummary data={data} />
+      <ClassComparison data={data} />
       <StudentsView data={data} />
     </main>
   )

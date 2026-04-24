@@ -1,11 +1,12 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { StudentFullData, RiskLevel } from '@/lib/types'
 import { RISK_HEX_COLORS } from '@/lib/constants'
 
 type Props = {
   data: StudentFullData[]
+  urlRiskFilter?: RiskLevel | null
 }
 
 const RISK_RING: Record<RiskLevel, string> = {
@@ -58,11 +59,15 @@ function hebrewFirstName(fullName: string): string {
   return parts.slice(0, 2).join(' ')
 }
 
-export function StudentLadder({ data }: Props) {
+export function StudentLadder({ data, urlRiskFilter }: Props) {
   const router  = useRouter()
   const [hovered,     setHovered]     = useState<string | null>(null)
   const [classFilter, setClassFilter] = useState<'all' | number>('all')
-  const [riskFilter,  setRiskFilter]  = useState<'all' | RiskLevel>('all')
+  const [riskFilter,  setRiskFilter]  = useState<'all' | RiskLevel>(urlRiskFilter ?? 'all')
+
+  useEffect(() => {
+    setRiskFilter(urlRiskFilter ?? 'all')
+  }, [urlRiskFilter])
 
   const isSingleClass = classFilter !== 'all'
   const svgHeight     = LADDER_HEIGHT

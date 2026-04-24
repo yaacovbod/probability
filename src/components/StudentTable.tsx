@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -10,9 +10,10 @@ import { scoreTextColor } from '@/lib/styling'
 
 type Props = {
   data: StudentFullData[]
+  urlRiskFilter?: RiskLevel | null
 }
 
-type SortKey = 'fullName' | 'classGroup' | 'score' | 'lashon' | 'tanach' | 'history' | 'english' | 'math' | 'attendance'
+type SortKey = 'fullName' | 'classGroup' | 'score' | 'lashon' | 'tanach' | 'history' | 'civics' | 'literature' | 'major' | 'english' | 'math' | 'attendance'
 
 function riskBadge(risk: RiskLevel) {
   const map: Record<RiskLevel, { bg: string; dot: string }> = {
@@ -41,10 +42,14 @@ function rowHover(): string {
 const CLASSES = ['הכל', 'יא1', 'יא2', 'יא3', 'יא4', 'יא5', 'יא6']
 const RISKS: (RiskLevel | 'הכל')[] = ['הכל', 'גבוה מאוד', 'גבוה', 'בינוני', 'נמוך מאוד']
 
-export function StudentTable({ data }: Props) {
+export function StudentTable({ data, urlRiskFilter }: Props) {
   const [search, setSearch] = useState('')
   const [classFilter, setClassFilter] = useState('הכל')
-  const [riskFilter, setRiskFilter] = useState<string>('הכל')
+  const [riskFilter, setRiskFilter] = useState<string>(urlRiskFilter ?? 'הכל')
+
+  useEffect(() => {
+    setRiskFilter(urlRiskFilter ?? 'הכל')
+  }, [urlRiskFilter])
   const [sortKey, setSortKey] = useState<SortKey>('score')
   const [sortAsc, setSortAsc] = useState(true)
   const router = useRouter()
@@ -56,7 +61,7 @@ export function StudentTable({ data }: Props) {
 
   const filtered = useMemo(() => {
     let rows = [...data]
-    if (search) rows = rows.filter(d => d.student.fullName.includes(search))
+    if (search) rows = rows.filter(d => d.student.fullName.includes(search) || d.student.id.includes(search))
     if (classFilter !== 'הכל') rows = rows.filter(d => d.student.classGroup.includes(classFilter.replace('יא', "יא'")))
     if (riskFilter !== 'הכל') rows = rows.filter(d => d.result.risk === riskFilter)
 
@@ -69,6 +74,9 @@ export function StudentTable({ data }: Props) {
       else if (sortKey === 'tanach') { va = a.result.subjectProbs.tanach ?? -1; vb = b.result.subjectProbs.tanach ?? -1 }
       else if (sortKey === 'history') { va = a.result.subjectProbs.history ?? -1; vb = b.result.subjectProbs.history ?? -1 }
       else if (sortKey === 'english') { va = a.result.subjectProbs.english ?? -1; vb = b.result.subjectProbs.english ?? -1 }
+      else if (sortKey === 'civics') { va = a.result.subjectProbs.civics ?? -1; vb = b.result.subjectProbs.civics ?? -1 }
+      else if (sortKey === 'literature') { va = a.result.subjectProbs.literature ?? -1; vb = b.result.subjectProbs.literature ?? -1 }
+      else if (sortKey === 'major') { va = a.result.subjectProbs.major ?? -1; vb = b.result.subjectProbs.major ?? -1 }
       else if (sortKey === 'math') { va = a.result.subjectProbs.math ?? -1; vb = b.result.subjectProbs.math ?? -1 }
       else if (sortKey === 'attendance') { va = a.student.attendanceAbsencePct ?? -1; vb = b.student.attendanceAbsencePct ?? -1 }
       if (va < vb) return sortAsc ? -1 : 1
@@ -99,11 +107,37 @@ export function StudentTable({ data }: Props) {
     return <span className={`${color} font-semibold tabular-nums`}>{prob}%</span>
   }
 
+  function downloadCSV() {
+    const header = ['ת"ז', 'שם', 'כיתה', 'חנ"מ', 'היעדרות%', 'ציון', 'סיכוי', 'לשון', 'תנ"ך', 'היסטוריה', 'אנגלית', 'מתמטיקה']
+    const rows = filtered.map(d => [
+      d.student.id,
+      d.student.fullName,
+      d.student.classGroup,
+      d.student.isSpecialEd ? 'כן' : '',
+      d.student.attendanceAbsencePct !== null ? Math.round(d.student.attendanceAbsencePct) : '',
+      d.result.score,
+      d.result.risk,
+      d.result.subjectProbs.lashon ?? '',
+      d.result.subjectProbs.tanach ?? '',
+      d.result.subjectProbs.history ?? '',
+      d.result.subjectProbs.english ?? '',
+      d.result.subjectProbs.math ?? '',
+    ])
+    const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bagrut-dashboard-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3 items-center">
         <Input
-          placeholder="חיפוש לפי שם..."
+          placeholder="חיפוש לפי שם או ת&quot;ז..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-56 text-right rounded-full bg-muted/60 border-0 focus-visible:ring-2 focus-visible:ring-primary"
@@ -123,6 +157,12 @@ export function StudentTable({ data }: Props) {
         <span className="text-sm text-muted-foreground mr-auto">
           <span className="font-bold text-foreground">{filtered.length}</span> תלמידים
         </span>
+        <button
+          onClick={downloadCSV}
+          className="text-xs text-muted-foreground hover:text-foreground border border-border/60 rounded-full px-3 py-1.5 transition-colors shrink-0"
+        >
+          ↓ ייצוא CSV
+        </button>
       </div>
 
       <div className="rounded-2xl border border-border/60 bg-card shadow-clarity overflow-x-auto">
@@ -139,6 +179,9 @@ export function StudentTable({ data }: Props) {
               <Th k="lashon" label="לשון" />
               <Th k="tanach" label='תנ"ך' />
               <Th k="history" label="היסטוריה" />
+              <Th k="civics" label="אזרחות" />
+              <Th k="literature" label="ספרות" />
+              <Th k="major" label="מגמה" />
               <Th k="english" label="אנגלית" />
               <Th k="math" label="מתמטיקה" />
             </TableRow>
@@ -166,6 +209,9 @@ export function StudentTable({ data }: Props) {
                   <TableCell>{subjectCell(d.result.subjectProbs.lashon)}</TableCell>
                   <TableCell>{subjectCell(d.result.subjectProbs.tanach)}</TableCell>
                   <TableCell>{subjectCell(d.result.subjectProbs.history)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.civics)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.literature)}</TableCell>
+                  <TableCell>{subjectCell(d.result.subjectProbs.major)}</TableCell>
                   <TableCell>{subjectCell(d.result.subjectProbs.english)}</TableCell>
                   <TableCell>{subjectCell(d.result.subjectProbs.math)}</TableCell>
                 </TableRow>

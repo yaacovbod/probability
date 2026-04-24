@@ -3,6 +3,8 @@ import { getStudentsData } from '@/lib/data'
 import { Gauge } from '@/components/Gauge'
 import { SubjectBar } from '@/components/SubjectBar'
 import { BackButton } from '@/components/BackButton'
+import { ClassPosition } from '@/components/ClassPosition'
+import { PrintButton } from '@/components/PrintButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RISK_BADGE_CLASSES } from '@/lib/constants'
 
@@ -25,6 +27,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
   if (!fullData) notFound()
 
   const { student, school, result } = fullData
+  const allPositions = all.map(d => ({ studentId: d.student.id, score: d.result.score, classGroup: d.student.classGroup }))
   const absence = student.attendanceAbsencePct
   const presence = absence !== null ? Math.round(100 - absence) : null
 
@@ -51,24 +54,47 @@ export default async function StudentPage({ params }: { params: { id: string } }
 
   return (
     <main dir="rtl" className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <BackButton />
-        <div>
-          <h1 className="text-2xl font-bold">
-            {student.fullName}
-            {student.isSpecialEd && <span className="text-yellow-500 mr-2">★</span>}
-          </h1>
-          <p className="text-gray-500 text-sm">{student.classGroup} | ת"ז: {student.id}</p>
+      <div className="flex items-center justify-between gap-3 print:hidden">
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">
+              דשבורד בגרות › {student.classGroup} › {student.fullName}
+            </p>
+            <h1 className="text-2xl font-bold">
+              {student.fullName}
+              {student.isSpecialEd && <span className="text-yellow-500 mr-2">★</span>}
+            </h1>
+            <p className="text-gray-500 text-sm">{student.classGroup} | ת"ז: {student.id}</p>
+          </div>
         </div>
+        <PrintButton />
+      </div>
+      {/* Print header — visible only in print */}
+      <div className="hidden print:block">
+        <h1 className="text-xl font-bold">{student.fullName}</h1>
+        <p className="text-sm text-gray-500">{student.classGroup} | ת"ז: {student.id} | נעימת הלב — דשבורד בגרות מחזור ג׳</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="flex flex-col items-center py-6">
+        <Card className="flex flex-col items-center py-6 px-5">
+          <p className="text-xs text-muted-foreground mb-1 text-center" title="ציון משוקלל: 55% בגרויות + 15% תעודה + 10% יח&quot;ל + 20% נוכחות">
+            ציון סיכוי כולל
+            <span className="mr-1 opacity-50 cursor-help" title="55% בגרויות · 15% תעודה · 10% יח&quot;ל · 20% נוכחות">ⓘ</span>
+          </p>
           <Gauge score={result.score} size={200} />
           <div className="mt-3">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${RISK_BADGE_CLASSES[result.risk]}`}>
               סיכוי {result.risk}
             </span>
+          </div>
+          <div className="w-full mt-2">
+            <ClassPosition
+              studentId={student.id}
+              score={result.score}
+              classGroup={student.classGroup}
+              allData={allPositions}
+            />
           </div>
         </Card>
 
