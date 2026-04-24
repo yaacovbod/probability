@@ -49,10 +49,19 @@ export function ExamCountdown({ data }: Props) {
       const key = exam.bagrutField ? `${exam.title}-${exam.round}` : `${exam.subject}-${exam.round}`
       if (!map.has(key)) {
         const withData = exam.schoolMajorKey
-          ? data.filter(s =>
-              s.student.majorName === exam.schoolMajorKey ||
-              (!s.student.majorName && s.school.majorSubject === exam.schoolMajorKey)
-            )
+          ? data.filter(s => {
+              // For exams with a unique bagrut field (not the shared major_other bucket),
+              // bagrut score takes priority; fall back to school grade if absent.
+              const hasDedicatedBagrut =
+                exam.bagrutField && exam.bagrutField !== 'major_other'
+                  ? s.bagrut[exam.bagrutField] !== null
+                  : false
+              return (
+                hasDedicatedBagrut ||
+                s.student.majorName === exam.schoolMajorKey ||
+                (!s.student.majorName && s.school.majorSubject === exam.schoolMajorKey)
+              )
+            })
           : exam.bagrutField
             ? data.filter(s => s.bagrut[exam.bagrutField!] !== null)
             : data.filter(s => s.result.subjectProbs[exam.subject] !== null)
