@@ -38,7 +38,7 @@ function rowsToObjects(rows: string[][], headerRowIndex = 0): Record<string, unk
 
   const headerCounts: Record<string, number> = {}
   const headers = rawHeaders.map(h => {
-    const normalized = (h ?? '').replace(/\r\n/g, '\n').trim()
+    const normalized = (h ?? '').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim()
     if (headerCounts[normalized] !== undefined) {
       headerCounts[normalized]++
       return `${normalized}_${headerCounts[normalized]}`
