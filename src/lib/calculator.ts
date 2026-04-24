@@ -153,20 +153,19 @@ export function probEnglish(
   englishUnits: 3 | 4 | 5 | null,
   schoolEnglish: number | null
 ): number | null {
-  const hasComponents = [
-    scores.eng_A, scores.eng_B, scores.eng_C, scores.eng_D,
-    scores.eng_E, scores.eng_F, scores.eng_G, scores.eng_boost,
-  ].some(v => v !== null)
+  const hasComponents = hasEngExam(scores)
+
+  // Use inferred unit level if not explicitly provided
+  const effectiveUnits = englishUnits ?? inferEnglishUnits(scores)
 
   // Compute from specific components based on unit level
-  const computed = engFinalFromComponents(scores, englishUnits)
+  const computed = engFinalFromComponents(scores, effectiveUnits)
   if (computed !== null) return engScoreToProb(computed)
 
-  // Fall back to sheet-computed final (only if it's not a spurious 0)
-  const sheetFinal = scores.eng_final === 0 && !hasComponents ? null : scores.eng_final
-  if (sheetFinal !== null) {
-    if (sheetFinal === 0) return 0
-    return engScoreToProb(sheetFinal)
+  // Sheet final is only reliable when NO individual components exist
+  // (sheet formula returns a partial/wrong value when questionnaires are partially filled)
+  if (!hasComponents && scores.eng_final !== null && scores.eng_final !== 0) {
+    return engScoreToProb(scores.eng_final)
   }
 
   // No bagrut data — estimate from school grade
@@ -311,6 +310,20 @@ function calcS1(
   return { s1, subjectProbs: sp }
 }
 
+function inferEnglishUnits(scores: BagrutScores): 3 | 4 | 5 | null {
+  if (scores.eng_F !== null || scores.eng_G !== null) return 5
+  if (scores.eng_D !== null || scores.eng_E !== null) return 4
+  if (scores.eng_A !== null || scores.eng_B !== null || scores.eng_C !== null) return 3
+  return null
+}
+
+function hasEngExam(scores: BagrutScores): boolean {
+  return [
+    scores.eng_A, scores.eng_B, scores.eng_C, scores.eng_D,
+    scores.eng_E, scores.eng_F, scores.eng_G, scores.eng_boost,
+  ].some(v => v !== null)
+}
+
 function hasMathExam(scores: BagrutScores): boolean {
   return (
     scores.math_35173 !== null ||
@@ -324,7 +337,7 @@ function calcS2(grades: SchoolGrades, scores: BagrutScores): number {
   const subjectGrades: (number | null)[] = [
     grades.hebrew,
     hasMathExam(scores) ? null : grades.math,
-    scores.eng_final ? null : grades.english,
+    hasEngExam(scores) ? null : grades.english,
     scores.history_exam ? null : grades.history,
     scores.tanach_exam ? null : grades.bible,
     scores.civics_exam ? null : grades.civics,
