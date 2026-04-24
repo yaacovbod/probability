@@ -21,15 +21,113 @@ const SUBJECT_LABELS: Record<string, string> = {
   major: 'מגמה',
 }
 
+function ScoreCell({ label, value }: { label: string; value: number | null }) {
+  if (value === null) return null
+  const color = value < 55 ? 'text-red-600' : value < 65 ? 'text-orange-500' : 'text-gray-800'
+  return (
+    <div className="flex justify-between text-sm">
+      <span className="text-gray-600">{label}</span>
+      <span className={`font-semibold ${color}`}>{value}</span>
+    </div>
+  )
+}
+
 export default async function StudentPage({ params }: { params: { id: string } }) {
   const all = await getStudentsData()
   const fullData = all.find(d => d.student.id === params.id)
   if (!fullData) notFound()
 
-  const { student, school, result } = fullData
+  const { student, bagrut, school, result } = fullData
   const allPositions = all.map(d => ({ studentId: d.student.id, score: d.result.score, classGroup: d.student.classGroup }))
   const absence = student.attendanceAbsencePct
   const presence = absence !== null ? Math.round(100 - absence) : null
+
+  const bagrutSections: { title: string; rows: { label: string; value: number | null }[] }[] = [
+    {
+      title: 'לשון',
+      rows: [
+        { label: 'בחינה חיצונית', value: bagrut.lashon_exam },
+        { label: 'הערכה פנימית', value: bagrut.lashon_school },
+      ],
+    },
+    {
+      title: 'היסטוריה',
+      rows: [
+        { label: 'משימות מבוקרות', value: bagrut.history_online },
+        { label: 'בחינה חיצונית', value: bagrut.history_exam },
+        { label: 'הערכה פנימית', value: bagrut.history_school },
+      ],
+    },
+    {
+      title: 'תנ"ך',
+      rows: [
+        { label: 'משימות מבוקרות', value: bagrut.tanach_online },
+        { label: 'בחינה חיצונית', value: bagrut.tanach_exam },
+        { label: 'הערכה פנימית', value: bagrut.tanach_school },
+      ],
+    },
+    {
+      title: 'אזרחות',
+      rows: [
+        { label: 'משימות מבוקרות', value: bagrut.civics_online },
+        { label: 'בחינה חיצונית', value: bagrut.civics_exam },
+        { label: 'הערכה פנימית', value: bagrut.civics_school },
+      ],
+    },
+    {
+      title: 'ספרות',
+      rows: [
+        { label: 'משימות מבוקרות', value: bagrut.literature_online },
+        { label: 'בחינה חיצונית', value: bagrut.literature_exam },
+        { label: 'הערכה פנימית', value: bagrut.literature_school },
+      ],
+    },
+    {
+      title: 'אנגלית',
+      rows: [
+        { label: 'שאלון A', value: bagrut.eng_A },
+        { label: 'שאלון B', value: bagrut.eng_B },
+        { label: 'שאלון C', value: bagrut.eng_C },
+        { label: 'שאלון D', value: bagrut.eng_D },
+        { label: 'שאלון E', value: bagrut.eng_E },
+        { label: 'שאלון F', value: bagrut.eng_F },
+        { label: 'שאלון G', value: bagrut.eng_G },
+        { label: 'Boost', value: bagrut.eng_boost },
+        { label: 'ציון סופי', value: bagrut.eng_final },
+      ],
+    },
+    {
+      title: 'מתמטיקה',
+      rows: [
+        { label: '35173', value: bagrut.math_35173 },
+        { label: '35371', value: bagrut.math_35371 },
+        { label: '35372', value: bagrut.math_35372 },
+        { label: '35471', value: bagrut.math_35471 },
+        { label: '35472', value: bagrut.math_35472 },
+        { label: '35571', value: bagrut.math_35571 },
+        { label: '35572', value: bagrut.math_35572 },
+      ],
+    },
+    {
+      title: 'מגמה',
+      rows: [
+        { label: 'ביולוגיה', value: bagrut.major_bio },
+        { label: 'פסיכולוגיה', value: bagrut.major_psychology },
+        { label: 'פיזיקה', value: bagrut.major_physics },
+        { label: 'מידע ונתונים', value: bagrut.major_data },
+        { label: 'אומנות', value: bagrut.major_art },
+        { label: 'תקשורת', value: bagrut.major_communication },
+        { label: 'כימיה', value: bagrut.major_chemistry },
+        { label: 'מדעי המחשב', value: bagrut.major_cs },
+        { label: 'ניהול עסקי', value: bagrut.major_business },
+        { label: 'מוט"ל', value: bagrut.major_motal },
+        { label: 'שפות', value: bagrut.major_languages },
+      ],
+    },
+  ].map(s => ({ ...s, rows: s.rows.filter(r => r.value !== null) }))
+   .filter(s => s.rows.length > 0)
+
+  const hasBagrut = bagrutSections.length > 0
 
   const breakdown = [
     { label: 'ציוני בגרויות שנעשו', value: result.breakdown.bagrutDone, weight: '55%' },
@@ -50,6 +148,9 @@ export default async function StudentPage({ params }: { params: { id: string } }
     { label: 'תנ"ך', value: school.bible },
     { label: 'אזרחות', value: school.civics },
     { label: 'ספרות', value: school.literature },
+    ...(school.majorSubject && school.major !== null
+      ? [{ label: `מגמה (${school.majorSubject})`, value: school.major }]
+      : []),
   ]
 
   return (
@@ -164,6 +265,26 @@ export default async function StudentPage({ params }: { params: { id: string } }
         </Card>
       </div>
 
+
+      {hasBagrut && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">ציוני בגרויות</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              {bagrutSections.map(section => (
+                <div key={section.title}>
+                  <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1.5">{section.title}</p>
+                  <div className="space-y-1">
+                    {section.rows.map(row => (
+                      <ScoreCell key={row.label} label={row.label} value={row.value} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {student.notes && (
         <Card>
