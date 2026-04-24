@@ -55,12 +55,33 @@ export default async function StudentPage({ params }: { params: { id: string } }
     false
   const engFinalDisplay = engAllComplete ? bagrut.eng_final : null
 
+  const calcFinal = (parts: [number | null, number][]): number | null => {
+    if (parts.some(([v]) => v === null)) return null
+    return Math.round(parts.reduce((s, [v, w]) => s + (v as number) * w, 0))
+  }
+
+  const lashonFinal = calcFinal([[bagrut.lashon_exam, 0.70], [bagrut.lashon_school, 0.30]])
+  const historyFinal = calcFinal([[bagrut.history_exam, 0.35], [bagrut.history_online, 0.35], [bagrut.history_school, 0.30]])
+  const tanachFinal = calcFinal([[bagrut.tanach_exam, 0.35], [bagrut.tanach_online, 0.35], [bagrut.tanach_school, 0.30]])
+  const civicsFinal = calcFinal([[bagrut.civics_exam, 0.35], [bagrut.civics_online, 0.35], [bagrut.civics_school, 0.30]])
+  const literatureFinal = calcFinal([[bagrut.literature_exam, 0.35], [bagrut.literature_online, 0.35], [bagrut.literature_school, 0.30]])
+
+  const mathFinal =
+    (bagrut.math_35571 !== null && bagrut.math_35572 !== null)
+      ? calcFinal([[bagrut.math_35571, 0.60], [bagrut.math_35572, 0.40]])
+    : (bagrut.math_35471 !== null && bagrut.math_35472 !== null)
+      ? calcFinal([[bagrut.math_35471, 0.65], [bagrut.math_35472, 0.35]])
+    : (bagrut.math_35173 !== null && bagrut.math_35371 !== null && bagrut.math_35372 !== null)
+      ? calcFinal([[bagrut.math_35173, 0.25], [bagrut.math_35371, 0.35], [bagrut.math_35372, 0.40]])
+    : null
+
   const bagrutSections: { title: string; rows: { label: string; value: number | null }[] }[] = [
     {
       title: 'לשון',
       rows: [
         { label: 'בחינה חיצונית', value: bagrut.lashon_exam },
         { label: 'הערכה פנימית', value: bagrut.lashon_school },
+        { label: 'ציון סופי', value: lashonFinal },
       ],
     },
     {
@@ -69,6 +90,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: 'משימות מבוקרות', value: bagrut.history_online },
         { label: 'בחינה חיצונית', value: bagrut.history_exam },
         { label: 'הערכה פנימית', value: bagrut.history_school },
+        { label: 'ציון סופי', value: historyFinal },
       ],
     },
     {
@@ -77,6 +99,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: 'משימות מבוקרות', value: bagrut.tanach_online },
         { label: 'בחינה חיצונית', value: bagrut.tanach_exam },
         { label: 'הערכה פנימית', value: bagrut.tanach_school },
+        { label: 'ציון סופי', value: tanachFinal },
       ],
     },
     {
@@ -85,6 +108,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: 'משימות מבוקרות', value: bagrut.civics_online },
         { label: 'בחינה חיצונית', value: bagrut.civics_exam },
         { label: 'הערכה פנימית', value: bagrut.civics_school },
+        { label: 'ציון סופי', value: civicsFinal },
       ],
     },
     {
@@ -93,6 +117,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: 'משימות מבוקרות', value: bagrut.literature_online },
         { label: 'בחינה חיצונית', value: bagrut.literature_exam },
         { label: 'הערכה פנימית', value: bagrut.literature_school },
+        { label: 'ציון סופי', value: literatureFinal },
       ],
     },
     {
@@ -119,6 +144,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
         { label: '35472', value: bagrut.math_35472 },
         { label: '35571', value: bagrut.math_35571 },
         { label: '35572', value: bagrut.math_35572 },
+        { label: 'ציון סופי', value: mathFinal },
       ],
     },
     {
