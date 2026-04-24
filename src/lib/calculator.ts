@@ -125,8 +125,7 @@ export function probEnglish(
   }
   if (engFinal === 0) return 0
   if (engFinal >= 70) return 100
-  if (engFinal >= 60) return 95
-  if (engFinal >= 55) return 85
+  if (engFinal >= 55) return 95  // passed ≥55 — near-certain
   if (engFinal >= 50) return 55
   if (engFinal >= 45) return 30
   return 10
@@ -161,7 +160,7 @@ function mathExamScore(scores: BagrutScores): number | null {
 
 function scoreToProbMath(score: number): number {
   if (score >= PASS.math.highConfidence) return 100
-  if (score >= PASS.math.midConfidence) return 85
+  if (score >= PASS.math.midConfidence) return 95  // passed ≥55 — near-certain
   if (score >= PASS.math.borderConfidence) return 55
   return 20
 }
