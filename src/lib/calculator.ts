@@ -132,22 +132,29 @@ export function probEnglish(
   return 10
 }
 
+function weightedNorm(parts: [number | null, number][]): number | null {
+  const present = parts.filter(([v]) => v !== null) as [number, number][]
+  if (present.length === 0) return null
+  const totalW = present.reduce((s, [, w]) => s + w, 0)
+  return present.reduce((s, [v, w]) => s + v * (w / totalW), 0)
+}
+
 function mathExamScore(scores: BagrutScores): number | null {
   if (scores.math_35571 !== null || scores.math_35572 !== null) {
-    return (scores.math_35571 ?? 0) * 0.60 + (scores.math_35572 ?? 0) * 0.40
+    return weightedNorm([[scores.math_35571, 0.60], [scores.math_35572, 0.40]])
   }
   if (scores.math_35471 !== null || scores.math_35472 !== null) {
-    return (scores.math_35471 ?? 0) * 0.65 + (scores.math_35472 ?? 0) * 0.35
+    return weightedNorm([[scores.math_35471, 0.65], [scores.math_35472, 0.35]])
   }
   if (scores.math_35173 !== null && scores.math_35371 === null && scores.math_35372 === null) {
-    return null
+    return null // handled separately by firstOnly branch in probMath
   }
   if (scores.math_35173 !== null || scores.math_35371 !== null || scores.math_35372 !== null) {
-    return (
-      (scores.math_35173 ?? 0) * 0.25 +
-      (scores.math_35371 ?? 0) * 0.35 +
-      (scores.math_35372 ?? 0) * 0.40
-    )
+    return weightedNorm([
+      [scores.math_35173, 0.25],
+      [scores.math_35371, 0.35],
+      [scores.math_35372, 0.40],
+    ])
   }
   return null
 }
