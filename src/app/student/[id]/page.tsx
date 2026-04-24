@@ -159,6 +159,11 @@ export default async function StudentPage({ params }: { params: { id: string } }
       : []),
   ]
 
+  const renderedAt = new Date().toLocaleString('he-IL', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+
   return (
     <main dir="rtl" className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between gap-3 print:hidden">
@@ -177,6 +182,10 @@ export default async function StudentPage({ params }: { params: { id: string } }
         </div>
         <PrintButton />
       </div>
+      {/* Timestamp — visible on screen and in print */}
+      <p className="text-xs text-muted-foreground text-left">
+        המידע המוצג נכון לתאריך ושעה: {renderedAt}
+      </p>
       {/* Print header — visible only in print */}
       <div className="hidden print:block">
         <h1 className="text-xl font-bold">{student.fullName}</h1>
