@@ -27,9 +27,10 @@ src/
     api/auth/route.ts               ← אימות סיסמה
     api/upload/route.ts             ← קבלת קובץ Excel
     api/debug-columns/route.ts      ← מחזיר כותרות עמודות ציוני_תעודה (לאבחון)
+    middleware.ts                   ← הגנת auth — מפנה ל-/login אם אין cookie תקין
   lib/
     types.ts                        ← Student (כולל majorName), BagrutScores (11 שדות מגמה), SchoolGrades (כולל majorSubject)
-    calculator.ts                   ← נוסחאות הסיכוי — probMajor משתמש בכל 11 שדות המגמה
+    calculator.ts                   ← נוסחאות הסיכוי — weightedNorm, engFinalFromComponents, probEnglish לפי יח"ל, probMajor (11 שדות)
     data.ts                         ← getStudentsData() עם React cache — נקודת גישה מרכזית
     exam-schedule.ts                ← EXAM_SCHEDULE[] + daysUntil() — bagrutField+schoolMajorKey לכל מגמה
     excel-parser.ts                 ← פענוח Excel — עמודות מגמה ספציפיות לכל מגמה
@@ -87,9 +88,16 @@ src/
 - `school.majorSubject` נקבע מהעמודה הספציפית הראשונה עם ציון בגיליון `ציוני_תעודה`
 - תלמיד ללא ציון בגרות ובלי ציון תעודה בשום מגמה — מוצג בסקציית "ללא מגמה"
 
+## לוגיקת חישוב אנגלית ומתמטיקה
+- אנגלית: `engFinalFromComponents(scores, units)` — 3יח"ל=A+B+C+Boost, 4יח"ל=C+D+E+Boost, 5יח"ל=E+F+G+Boost
+- שאלוני B/D/F בשליטת בית ספר → ברירת מחדל 85 כשחסרים
+- מתמטיקה: `weightedNorm` מנרמל לפי משקולות הרכיבים הקיימים בלבד (לא מניח 0 לחסרים)
+- מתמטיקה firstOnly (35173 לבד): ≥85 → 95%, ≥70 → 80%, ≥55 → 60%
+
 ## הערות
 - מפתח ראשי: תעודת זהות (לא שם)
 - `exam === null` → לא ניגש עדיין, `exam === 0` → ניגש ולא עבר/דילג
 - `eng_final === 0` ללא מרכיבי אנגלית (A–G, Boost) → מטופל כ-null (נוסחת Sheets מחזירה 0 כשאין נתון)
 - הדפסת כרטיס תלמיד: `zoom: 0.72` ב-print CSS כדי להכניס לדף אחד
+- טיימסטמפ render: `timeZone: 'Asia/Jerusalem'` — עובר אוטומטית בין שעון קיץ/חורף
 - `/api/debug-columns` — route זמני לאבחון שמות עמודות ציוני_תעודה
