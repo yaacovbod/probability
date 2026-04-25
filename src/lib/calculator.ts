@@ -360,9 +360,10 @@ function calcS3(student: Student, scores: BagrutScores): number {
   else if (student.mathUnits === 4) mathUnitScore = 80
   else if (student.mathUnits === 3) mathUnitScore = 60
 
-  let engUnitScore = 60
+  let engUnitScore = 50
   if (student.englishUnits === 5) engUnitScore = 95
   else if (student.englishUnits === 4) engUnitScore = 80
+  else if (student.englishUnits === 3) engUnitScore = 50
 
   return (mathUnitScore + engUnitScore) / 2
 }
