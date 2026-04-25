@@ -169,8 +169,8 @@ export default async function StudentPage({ params }: { params: { id: string } }
   const hasBagrut = bagrutSections.length > 0
 
   const breakdown = [
-    { label: 'ציוני בגרויות שנעשו', value: result.breakdown.bagrutDone, weight: '55%' },
-    { label: 'ציוני תעודה', value: result.breakdown.schoolGrades, weight: '15%' },
+    { label: 'ציוני בגרויות שנעשו', value: result.breakdown.bagrutDone, weight: '50%' },
+    { label: 'ציוני תעודה', value: result.breakdown.schoolGrades, weight: '20%' },
     { label: 'רמת מתמטיקה + אנגלית', value: result.breakdown.mathEnglishLevel, weight: '10%' },
     { label: 'נוכחות', value: result.breakdown.attendance, weight: '20%' },
   ]
@@ -228,9 +228,9 @@ export default async function StudentPage({ params }: { params: { id: string } }
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="flex flex-col items-center py-6 px-5">
-          <p className="text-xs text-muted-foreground mb-1 text-center" title="ציון משוקלל: 55% בגרויות + 15% תעודה + 10% יח&quot;ל + 20% נוכחות">
+          <p className="text-xs text-muted-foreground mb-1 text-center" title="ציון משוקלל: 50% בגרויות + 20% תעודה + 10% יח&quot;ל + 20% נוכחות">
             ציון סיכוי כולל
-            <span className="mr-1 opacity-50 cursor-help" title="55% בגרויות · 15% תעודה · 10% יח&quot;ל · 20% נוכחות">ⓘ</span>
+            <span className="mr-1 opacity-50 cursor-help" title="50% בגרויות · 20% תעודה · 10% יח&quot;ל · 20% נוכחות">ⓘ</span>
           </p>
           <Gauge score={result.score} size={200} />
           <div className="mt-3">

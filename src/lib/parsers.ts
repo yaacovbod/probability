@@ -50,7 +50,7 @@ export function parseSchoolGradesRow(row: Record<string, unknown>): SchoolGrades
   return {
     studentId: String(row['ת.ז'] ?? row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
     civics: n(row['אזרחות']),
-    english: pickFirst('אנגלית 5 יח"ל', 'אנגלית 5 יח"ל_1', 'אנגלית 4 יח"ל', 'אנגלית'),
+    english: pickFirst('אנגלית 5 יח"ל', 'אנגלית 5 יח"ל_1', 'אנגלית 5 יח"ל_2', 'אנגלית 4 יח"ל', 'אנגלית'),
     history: n(row['היסטוריה']),
     hebrew: n(row['לשון'] ?? row['עברית'] ?? row["עב''ר"]),
     math: n(row['מתמטיקה 5 יח"ל'] ?? row['מתמטיקה 4 יח"ל'] ?? row['מתמטיקה 3 יח"ל'] ?? row['מתמטיקה']),
