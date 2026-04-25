@@ -1,8 +1,8 @@
 import { Student, BagrutScores, SchoolGrades, ProbabilityResult, RiskLevel } from './types'
 
 const WEIGHTS = {
-  bagrutDone: 0.55,
-  schoolGrades: 0.15,
+  bagrutDone: 0.50,
+  schoolGrades: 0.20,
   mathEnglishLevel: 0.10,
   attendance: 0.20,
 } as const
