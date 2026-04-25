@@ -19,7 +19,8 @@ function riskBadge(risk: RiskLevel) {
   const map: Record<RiskLevel, { bg: string; dot: string }> = {
     'גבוה מאוד': { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
     'גבוה': { bg: 'bg-primary/10 text-primary border-primary/20', dot: 'bg-primary' },
-    'בינוני': { bg: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+    'בינוני': { bg: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-500' },
+    'נמוך': { bg: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-500' },
     'נמוך מאוד': { bg: 'bg-destructive/10 text-destructive border-destructive/20', dot: 'bg-destructive' },
   }
   const style = map[risk]

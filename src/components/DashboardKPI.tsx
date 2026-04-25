@@ -23,7 +23,8 @@ export function DashboardKPI({ data }: Props) {
   const veryHigh = data.filter(d => d.result.score >= 85).length
   const high2 = data.filter(d => d.result.score >= 70 && d.result.score < 85).length
   const mid = data.filter(d => d.result.score >= 45 && d.result.score < 70).length
-  const low2 = data.filter(d => d.result.score < 45).length
+  const low = data.filter(d => d.result.score >= 35 && d.result.score < 45).length
+  const veryLow = data.filter(d => d.result.score < 35).length
 
   const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
 
@@ -31,8 +32,9 @@ export function DashboardKPI({ data }: Props) {
     { label: 'סך הכל תלמידים', value: total, accent: '#7C3AED', glow: 'rgba(124, 58, 237, 0.12)', icon: '◉', sub: 'שכבה יא׳', riskParam: null },
     { label: 'סיכוי גבוה מאוד', value: veryHigh, accent: '#10B981', glow: 'rgba(16, 185, 129, 0.15)', icon: '▲', sub: `${pct(veryHigh)}% · ציון 85+`, riskParam: 'גבוה מאוד' },
     { label: 'סיכוי גבוה', value: high2, accent: '#0891B2', glow: 'rgba(8, 145, 178, 0.15)', icon: '◆', sub: `${pct(high2)}% · ציון 70-84`, riskParam: 'גבוה' },
-    { label: 'סיכוי בינוני', value: mid, accent: '#F59E0B', glow: 'rgba(245, 158, 11, 0.18)', icon: '●', sub: `${pct(mid)}% · ציון 45-69`, riskParam: 'בינוני' },
-    { label: 'סיכוי נמוך מאוד', value: low2, accent: '#EF4444', glow: 'rgba(239, 68, 68, 0.18)', icon: '▼', sub: `${pct(low2)}% · מתחת 45`, riskParam: 'נמוך מאוד' },
+    { label: 'סיכוי בינוני', value: mid, accent: '#EAB308', glow: 'rgba(234, 179, 8, 0.18)', icon: '●', sub: `${pct(mid)}% · ציון 45-69`, riskParam: 'בינוני' },
+    { label: 'סיכוי נמוך', value: low, accent: '#F97316', glow: 'rgba(249, 115, 22, 0.18)', icon: '●', sub: `${pct(low)}% · ציון 35-44`, riskParam: 'נמוך' },
+    { label: 'סיכוי נמוך מאוד', value: veryLow, accent: '#EF4444', glow: 'rgba(239, 68, 68, 0.18)', icon: '▼', sub: `${pct(veryLow)}% · מתחת 35`, riskParam: 'נמוך מאוד' },
   ]
 
   const activeRisk = searchParams.get('risk')
