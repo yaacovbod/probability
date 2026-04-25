@@ -1,6 +1,6 @@
 export function scoreHexColor(score: number): string {
-  if (score >= 85) return '#10B981'
-  if (score >= 70) return '#0891B2'
+  if (score >= 85) return '#0891B2'
+  if (score >= 70) return '#10B981'
   if (score >= 45) return '#F59E0B'
   return '#EF4444'
 }

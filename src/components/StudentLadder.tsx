@@ -10,16 +10,16 @@ type Props = {
 }
 
 const RISK_RING: Record<RiskLevel, string> = {
-  'גבוה מאוד': 'rgba(16, 185, 129, 0.25)',
-  'גבוה': 'rgba(8, 145, 178, 0.25)',
+  'גבוה מאוד': 'rgba(8, 145, 178, 0.25)',
+  'גבוה': 'rgba(16, 185, 129, 0.25)',
   'בינוני': 'rgba(234, 179, 8, 0.25)',
   'נמוך': 'rgba(249, 115, 22, 0.25)',
   'נמוך מאוד': 'rgba(239, 68, 68, 0.25)',
 }
 
 const ZONES: { label: string[]; min: number; max: number; bg: string; accent: string }[] = [
-  { label: ['גבוה', 'מאוד'], min: 85, max: 100, bg: 'rgba(16, 185, 129, 0.08)', accent: '#10B981' },
-  { label: ['גבוה'],         min: 70, max: 85,  bg: 'rgba(8, 145, 178, 0.08)',  accent: '#0891B2' },
+  { label: ['גבוה', 'מאוד'], min: 85, max: 100, bg: 'rgba(8, 145, 178, 0.08)',  accent: '#0891B2' },
+  { label: ['גבוה'],         min: 70, max: 85,  bg: 'rgba(16, 185, 129, 0.08)', accent: '#10B981' },
   { label: ['בינוני'],       min: 45, max: 70,  bg: 'rgba(234, 179, 8, 0.08)',  accent: '#EAB308' },
   { label: ['נמוך'],         min: 35, max: 45,  bg: 'rgba(249, 115, 22, 0.08)', accent: '#F97316' },
   { label: ['נמוך', 'מאוד'], min: 0,  max: 35,  bg: 'rgba(239, 68, 68, 0.08)',  accent: '#EF4444' },
@@ -266,11 +266,12 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
             )
           })}
 
-          {/* Dots (+ score label above + name below in single-class) */}
+          {/* Dots or names */}
           {positioned.map((p, i) => {
             const isHovered = hovered === p.student.student.id
             const color     = RISK_HEX_COLORS[p.student.result.risk]
-            const dotR      = isHovered ? 10 : isSingleClass ? 9 : 7
+            const dotR      = isHovered ? 10 : 7
+            const firstName = hebrewFirstName(p.student.student.fullName)
 
             return (
               <g
@@ -285,24 +286,40 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => router.push(`/student/${p.student.student.id}`)}
               >
-                {isHovered && <circle cx={p.cx} cy={p.cy} r={16} fill={RISK_RING[p.student.result.risk]} />}
-
-                <circle
-                  cx={p.cx} cy={p.cy} r={dotR}
-                  fill={color} stroke="white" strokeWidth={2}
-                  style={{
-                    filter: isHovered ? `drop-shadow(0 4px 10px ${color}80)` : `drop-shadow(0 1px 2px rgba(0,0,0,0.15))`,
-                    transition: 'r 0.2s ease, filter 0.2s ease',
-                  }}
-                />
-
-                {/* Score above dot — only in single-class */}
-                {isSingleClass && (
-                  <text
-                    x={p.cx} y={p.cy - 14}
-                    fill={color} fontSize={10} fontWeight={700}
-                    textAnchor="middle" dominantBaseline="auto"
-                  >{p.student.result.score}</text>
+                {isSingleClass ? (
+                  <>
+                    {/* Score above */}
+                    <text
+                      x={p.cx} y={p.cy - 14}
+                      fill={color} fontSize={10} fontWeight={700}
+                      textAnchor="middle" dominantBaseline="auto"
+                    >{p.student.result.score}</text>
+                    {/* Tiny position dot */}
+                    <circle cx={p.cx} cy={p.cy} r={4}
+                      fill={color} stroke="white" strokeWidth={1.5}
+                      style={{ filter: isHovered ? `drop-shadow(0 3px 8px ${color}90)` : undefined }}
+                    />
+                    {/* Name below */}
+                    <text
+                      x={p.cx} y={p.cy + 14}
+                      fill={isHovered ? color : `${color}CC`}
+                      fontSize={isHovered ? 10 : 9}
+                      fontWeight={isHovered ? 700 : 600}
+                      textAnchor="middle" dominantBaseline="hanging"
+                    >{firstName}</text>
+                  </>
+                ) : (
+                  <>
+                    {isHovered && <circle cx={p.cx} cy={p.cy} r={16} fill={RISK_RING[p.student.result.risk]} />}
+                    <circle
+                      cx={p.cx} cy={p.cy} r={dotR}
+                      fill={color} stroke="white" strokeWidth={2}
+                      style={{
+                        filter: isHovered ? `drop-shadow(0 4px 10px ${color}80)` : `drop-shadow(0 1px 2px rgba(0,0,0,0.15))`,
+                        transition: 'r 0.2s ease, filter 0.2s ease',
+                      }}
+                    />
+                  </>
                 )}
               </g>
             )
