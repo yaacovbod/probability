@@ -16,11 +16,11 @@ const RISK_RING: Record<RiskLevel, string> = {
   'נמוך מאוד': 'rgba(239, 68, 68, 0.25)',
 }
 
-const ZONES: { label: string; min: number; max: number; bg: string; accent: string }[] = [
-  { label: 'סיכוי גבוה מאוד', min: 85, max: 100, bg: 'rgba(16, 185, 129, 0.08)', accent: '#10B981' },
-  { label: 'סיכוי גבוה',      min: 70, max: 85,  bg: 'rgba(8, 145, 178, 0.08)',  accent: '#0891B2' },
-  { label: 'סיכוי בינוני',    min: 45, max: 70,  bg: 'rgba(245, 158, 11, 0.08)', accent: '#F59E0B' },
-  { label: 'סיכוי נמוך מאוד', min: 0,  max: 45,  bg: 'rgba(239, 68, 68, 0.08)',  accent: '#EF4444' },
+const ZONES: { label: string[]; min: number; max: number; bg: string; accent: string }[] = [
+  { label: ['גבוה', 'מאוד'], min: 85, max: 100, bg: 'rgba(16, 185, 129, 0.08)', accent: '#10B981' },
+  { label: ['גבוה'],         min: 70, max: 85,  bg: 'rgba(8, 145, 178, 0.08)',  accent: '#0891B2' },
+  { label: ['בינוני'],       min: 45, max: 70,  bg: 'rgba(245, 158, 11, 0.08)', accent: '#F59E0B' },
+  { label: ['נמוך', 'מאוד'], min: 0,  max: 45,  bg: 'rgba(239, 68, 68, 0.08)',  accent: '#EF4444' },
 ]
 
 type Positioned = {
@@ -215,13 +215,17 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
                 {/* Zone label in the right margin — never overlaps dots */}
                 <text
                   x={DOT_AREA_RIGHT + 12}
-                  y={(yTop + yBottom) / 2}
+                  y={(yTop + yBottom) / 2 - (zone.label.length > 1 ? 7 : 0)}
                   fill={zone.accent}
                   fontSize={11}
                   fontWeight={700}
                   dominantBaseline="middle"
                   textAnchor="start"
-                >{zone.label}</text>
+                >
+                  {zone.label.map((word, wi) => (
+                    <tspan key={wi} x={DOT_AREA_RIGHT + 12} dy={wi === 0 ? 0 : 14}>{word}</tspan>
+                  ))}
+                </text>
               </g>
             )
           })}
