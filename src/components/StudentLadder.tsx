@@ -208,7 +208,7 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
             const yTop    = scoreToY(zone.max)
             const yBottom = scoreToY(zone.min)
             return (
-              <g key={zone.label}>
+              <g key={zone.label.join('-')}>
                 <rect x={DOT_AREA_LEFT} y={yTop} width={DOT_AREA_RIGHT - DOT_AREA_LEFT} height={yBottom - yTop} fill={zone.bg} />
                 <line
                   x1={DOT_AREA_LEFT} x2={DOT_AREA_RIGHT} y1={yBottom} y2={yBottom}
