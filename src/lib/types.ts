@@ -72,7 +72,7 @@ export type SchoolGrades = {
   majorSubject: string | null
 }
 
-export type RiskLevel = 'גבוה מאוד' | 'גבוה' | 'בינוני' | 'נמוך מאוד'
+export type RiskLevel = 'גבוה מאוד' | 'גבוה' | 'בינוני' | 'נמוך' | 'נמוך מאוד'
 
 export type SubjectProbs = {
   lashon: number | null

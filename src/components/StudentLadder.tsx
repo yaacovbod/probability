@@ -12,15 +12,17 @@ type Props = {
 const RISK_RING: Record<RiskLevel, string> = {
   'גבוה מאוד': 'rgba(16, 185, 129, 0.25)',
   'גבוה': 'rgba(8, 145, 178, 0.25)',
-  'בינוני': 'rgba(245, 158, 11, 0.25)',
+  'בינוני': 'rgba(234, 179, 8, 0.25)',
+  'נמוך': 'rgba(249, 115, 22, 0.25)',
   'נמוך מאוד': 'rgba(239, 68, 68, 0.25)',
 }
 
 const ZONES: { label: string[]; min: number; max: number; bg: string; accent: string }[] = [
   { label: ['גבוה', 'מאוד'], min: 85, max: 100, bg: 'rgba(16, 185, 129, 0.08)', accent: '#10B981' },
   { label: ['גבוה'],         min: 70, max: 85,  bg: 'rgba(8, 145, 178, 0.08)',  accent: '#0891B2' },
-  { label: ['בינוני'],       min: 45, max: 70,  bg: 'rgba(245, 158, 11, 0.08)', accent: '#F59E0B' },
-  { label: ['נמוך', 'מאוד'], min: 0,  max: 45,  bg: 'rgba(239, 68, 68, 0.08)',  accent: '#EF4444' },
+  { label: ['בינוני'],       min: 45, max: 70,  bg: 'rgba(234, 179, 8, 0.08)',  accent: '#EAB308' },
+  { label: ['נמוך'],         min: 35, max: 45,  bg: 'rgba(249, 115, 22, 0.08)', accent: '#F97316' },
+  { label: ['נמוך', 'מאוד'], min: 0,  max: 35,  bg: 'rgba(239, 68, 68, 0.08)',  accent: '#EF4444' },
 ]
 
 type Positioned = {
@@ -85,7 +87,7 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
   }, [data])
 
   const riskCounts = useMemo(() => {
-    const counts: Record<RiskLevel, number> = { 'גבוה מאוד': 0, 'גבוה': 0, 'בינוני': 0, 'נמוך מאוד': 0 }
+    const counts: Record<RiskLevel, number> = { 'גבוה מאוד': 0, 'גבוה': 0, 'בינוני': 0, 'נמוך': 0, 'נמוך מאוד': 0 }
     data.forEach(d => { counts[d.result.risk]++ })
     return counts
   }, [data])

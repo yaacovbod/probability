@@ -23,6 +23,7 @@ const RISK_THRESHOLDS = {
   veryHigh: 85,
   high: 70,
   medium: 45,
+  low: 35,
 } as const
 
 // Passing threshold for each subject formula (Israeli bagrut: final ≥ 55 = passing)
@@ -404,6 +405,7 @@ export function calculateProbability(
   if (score >= RISK_THRESHOLDS.veryHigh) risk = 'גבוה מאוד'
   else if (score >= RISK_THRESHOLDS.high) risk = 'גבוה'
   else if (score >= RISK_THRESHOLDS.medium) risk = 'בינוני'
+  else if (score >= RISK_THRESHOLDS.low) risk = 'נמוך'
   else risk = 'נמוך מאוד'
 
   return {
