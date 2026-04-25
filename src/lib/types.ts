@@ -60,9 +60,11 @@ export type SchoolGrades = {
   studentId: string
   civics: number | null
   english: number | null
+  englishLevel: 3 | 4 | 5 | null
   history: number | null
   hebrew: number | null
   math: number | null
+  mathLevel: 3 | 4 | 5 | null
   bible: number | null
   literature: number | null
   pe: number | null

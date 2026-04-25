@@ -47,13 +47,25 @@ export function parseSchoolGradesRow(row: Record<string, unknown>): SchoolGrades
     }
     return null
   }
+  const englishLevel: 3 | 4 | 5 | null =
+    pickFirst('אנגלית 5 יח"ל', 'אנגלית 5 יח"ל_1', 'אנגלית 5 יח"ל_2') !== null ? 5 :
+    n(row['אנגלית 4 יח"ל']) !== null ? 4 :
+    n(row['אנגלית']) !== null ? 3 : null
+
+  const mathLevel: 3 | 4 | 5 | null =
+    n(row['מתמטיקה 5 יח"ל']) !== null ? 5 :
+    n(row['מתמטיקה 4 יח"ל']) !== null ? 4 :
+    n(row['מתמטיקה 3 יח"ל']) !== null ? 3 : null
+
   return {
     studentId: String(row['ת.ז'] ?? row['תעודת זהות'] ?? row['ת"ז'] ?? ''),
     civics: n(row['אזרחות']),
     english: pickFirst('אנגלית 5 יח"ל', 'אנגלית 5 יח"ל_1', 'אנגלית 5 יח"ל_2', 'אנגלית 4 יח"ל', 'אנגלית'),
+    englishLevel,
     history: n(row['היסטוריה']),
     hebrew: n(row['לשון'] ?? row['עברית'] ?? row["עב''ר"]),
     math: n(row['מתמטיקה 5 יח"ל'] ?? row['מתמטיקה 4 יח"ל'] ?? row['מתמטיקה 3 יח"ל'] ?? row['מתמטיקה']),
+    mathLevel,
     bible: n(row['תנ"ך'] ?? row['תנך']),
     literature: n(row['ספרות']),
     pe: n(row['חינוך גופני'] ?? row['חינוך גופני בנות'] ?? row['חינוך גופני בנים']),

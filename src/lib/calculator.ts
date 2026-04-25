@@ -351,19 +351,23 @@ function calcS2(grades: SchoolGrades, scores: BagrutScores): number {
   return 25
 }
 
-function calcS3(student: Student, scores: BagrutScores): number {
+function calcS3(student: Student, scores: BagrutScores, grades: SchoolGrades): number {
   let mathUnitScore = 65
   if (scores.math_35571 !== null || scores.math_35572 !== null) mathUnitScore = 95
   else if (scores.math_35471 !== null || scores.math_35472 !== null) mathUnitScore = 80
   else if (scores.math_35173 !== null || scores.math_35371 !== null || scores.math_35372 !== null) mathUnitScore = 60
-  else if (student.mathUnits === 5) mathUnitScore = 95
-  else if (student.mathUnits === 4) mathUnitScore = 80
-  else if (student.mathUnits === 3) mathUnitScore = 60
+  else {
+    const mathUnits = student.mathUnits ?? grades.mathLevel
+    if (mathUnits === 5) mathUnitScore = 95
+    else if (mathUnits === 4) mathUnitScore = 80
+    else if (mathUnits === 3) mathUnitScore = 60
+  }
 
+  const engUnits = student.englishUnits ?? inferEnglishUnits(scores) ?? grades.englishLevel
   let engUnitScore = 50
-  if (student.englishUnits === 5) engUnitScore = 95
-  else if (student.englishUnits === 4) engUnitScore = 80
-  else if (student.englishUnits === 3) engUnitScore = 50
+  if (engUnits === 5) engUnitScore = 95
+  else if (engUnits === 4) engUnitScore = 80
+  else if (engUnits === 3) engUnitScore = 50
 
   return (mathUnitScore + engUnitScore) / 2
 }
@@ -385,7 +389,7 @@ export function calculateProbability(
 ): ProbabilityResult {
   const { s1, subjectProbs } = calcS1(student, scores, grades)
   const s2 = calcS2(grades, scores)
-  const s3 = calcS3(student, scores)
+  const s3 = calcS3(student, scores, grades)
   const s4 = calcS4(student.attendanceAbsencePct)
 
   const raw =
