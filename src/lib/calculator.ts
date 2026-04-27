@@ -354,13 +354,13 @@ function calcS2(grades: SchoolGrades, scores: BagrutScores): number {
 
 function calcS3(student: Student, scores: BagrutScores, grades: SchoolGrades): number {
   let mathUnitScore = 65
-  if (scores.math_35571 !== null || scores.math_35572 !== null) mathUnitScore = 95
-  else if (scores.math_35471 !== null || scores.math_35472 !== null) mathUnitScore = 80
+  if (scores.math_35571 !== null || scores.math_35572 !== null) mathUnitScore = 100
+  else if (scores.math_35471 !== null || scores.math_35472 !== null) mathUnitScore = 90
   else if (scores.math_35173 !== null || scores.math_35371 !== null || scores.math_35372 !== null) mathUnitScore = 60
   else {
     const mathUnits = student.mathUnits ?? grades.mathLevel
-    if (mathUnits === 5) mathUnitScore = 95
-    else if (mathUnits === 4) mathUnitScore = 80
+    if (mathUnits === 5) mathUnitScore = 100
+    else if (mathUnits === 4) mathUnitScore = 90
     else if (mathUnits === 3) mathUnitScore = 60
   }
 
