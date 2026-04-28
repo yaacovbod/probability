@@ -63,22 +63,32 @@ function hebrewFirstName(fullName: string): string {
 
 export function StudentLadder({ data, urlRiskFilter }: Props) {
   const router  = useRouter()
-  const [hovered,     setHovered]     = useState<string | null>(null)
-  const [classFilter, setClassFilter] = useState<'all' | number>('all')
-  const [riskFilter,  setRiskFilter]  = useState<'all' | RiskLevel>(urlRiskFilter ?? 'all')
+  const [hovered,          setHovered]          = useState<string | null>(null)
+  const [selectedClasses,  setSelectedClasses]  = useState<Set<number>>(new Set())
+  const [riskFilter,       setRiskFilter]        = useState<'all' | RiskLevel>(urlRiskFilter ?? 'all')
 
   useEffect(() => {
     setRiskFilter(urlRiskFilter ?? 'all')
   }, [urlRiskFilter])
 
-  const isSingleClass = classFilter !== 'all'
+  function toggleClass(n: number) {
+    setSelectedClasses(prev => {
+      const next = new Set(prev)
+      if (next.has(n)) next.delete(n)
+      else next.add(n)
+      return next
+    })
+  }
+
+  const isSingleClass = selectedClasses.size === 1
+  const activeClasses = selectedClasses.size === 0 ? null : selectedClasses
   const svgHeight     = LADDER_HEIGHT
 
   const filtered = useMemo(() => data.filter(d => {
-    if (classFilter !== 'all' && extractClassNumber(d.student.classGroup) !== classFilter) return false
-    if (riskFilter  !== 'all' && d.result.risk !== riskFilter) return false
+    if (activeClasses && !activeClasses.has(extractClassNumber(d.student.classGroup))) return false
+    if (riskFilter !== 'all' && d.result.risk !== riskFilter) return false
     return true
-  }), [data, classFilter, riskFilter])
+  }), [data, activeClasses, riskFilter])
 
   const classNumbers = useMemo(() => {
     const set = new Set<number>()
@@ -122,7 +132,10 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
       byClass.get(n)!.push(d)
     })
 
-    const allClasses  = classNumbers.length > 0 ? classNumbers : [0]
+    const visibleClasses = activeClasses
+      ? classNumbers.filter(n => activeClasses.has(n))
+      : classNumbers
+    const allClasses  = visibleClasses.length > 0 ? visibleClasses : [0]
     const laneWidth   = USABLE / allClasses.length
     const result: Positioned[] = []
 
@@ -157,17 +170,17 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setClassFilter('all')}
+            onClick={() => setSelectedClasses(new Set())}
             className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all ${
-              classFilter === 'all' ? 'bg-primary text-primary-foreground shadow-clarity' : 'bg-muted text-muted-foreground hover:bg-accent'
+              selectedClasses.size === 0 ? 'bg-primary text-primary-foreground shadow-clarity' : 'bg-muted text-muted-foreground hover:bg-accent'
             }`}
           >כל הכיתות</button>
           {classNumbers.map(n => (
             <button
               key={n}
-              onClick={() => setClassFilter(n)}
+              onClick={() => toggleClass(n)}
               className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all ${
-                classFilter === n ? 'bg-primary text-primary-foreground shadow-clarity' : 'bg-muted text-muted-foreground hover:bg-accent'
+                selectedClasses.has(n) ? 'bg-primary text-primary-foreground shadow-clarity' : 'bg-muted text-muted-foreground hover:bg-accent'
               }`}
             >יא{n}</button>
           ))}
@@ -256,15 +269,20 @@ export function StudentLadder({ data, urlRiskFilter }: Props) {
           })}
 
           {/* Class labels at bottom (multi-class) */}
-          {!isSingleClass && classNumbers.map((n, i) => {
-            const laneW   = (DOT_AREA_RIGHT - DOT_AREA_LEFT) / classNumbers.length
-            const centerX = DOT_AREA_LEFT + laneW * i + laneW / 2
-            return (
-              <text key={n} x={centerX} y={LADDER_HEIGHT - 10}
-                fill="var(--muted-foreground)" fontSize={12} fontWeight={700}
-                textAnchor="middle" opacity={0.7}>יא{n}</text>
-            )
-          })}
+          {!isSingleClass && (() => {
+            const visibleClasses = activeClasses
+              ? classNumbers.filter(n => activeClasses.has(n))
+              : classNumbers
+            return visibleClasses.map((n, i) => {
+              const laneW   = (DOT_AREA_RIGHT - DOT_AREA_LEFT) / visibleClasses.length
+              const centerX = DOT_AREA_LEFT + laneW * i + laneW / 2
+              return (
+                <text key={n} x={centerX} y={LADDER_HEIGHT - 10}
+                  fill="var(--muted-foreground)" fontSize={12} fontWeight={700}
+                  textAnchor="middle" opacity={0.7}>יא{n}</text>
+              )
+            })
+          })()}
 
           {/* Dots or names */}
           {positioned.map((p, i) => {
