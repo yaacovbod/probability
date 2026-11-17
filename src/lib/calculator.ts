@@ -1,12 +1,5 @@
 import { Student, BagrutScores, SchoolGrades, ProbabilityResult, RiskLevel } from './types'
 
-const WEIGHTS = {
-  bagrutDone: 0.50,
-  schoolGrades: 0.20,
-  mathEnglishLevel: 0.10,
-  attendance: 0.20,
-} as const
-
 const BAGRUT_SUB_WEIGHTS = {
   lashon: 0.50,
   tanach: 0.30,
@@ -325,81 +318,21 @@ function hasEngExam(scores: BagrutScores): boolean {
   ].some(v => v !== null)
 }
 
-function hasMathExam(scores: BagrutScores): boolean {
-  return (
-    scores.math_35173 !== null ||
-    scores.math_35371 !== null || scores.math_35372 !== null ||
-    scores.math_35471 !== null || scores.math_35472 !== null ||
-    scores.math_35571 !== null || scores.math_35572 !== null
-  )
-}
+const NO_SCHOOL_GRADES = (id: string): SchoolGrades => ({
+  studentId: id,
+  civics: null, english: null, englishLevel: null, history: null, hebrew: null,
+  math: null, mathLevel: null, bible: null, literature: null, pe: null, major: null, majorSubject: null,
+})
 
-function calcS2(grades: SchoolGrades, scores: BagrutScores): number {
-  const subjectGrades: (number | null)[] = [
-    grades.hebrew,
-    hasMathExam(scores) ? null : grades.math,
-    hasEngExam(scores) ? null : grades.english,
-    scores.history_exam ? null : grades.history,
-    scores.tanach_exam ? null : grades.bible,
-    scores.civics_exam ? null : grades.civics,
-  ]
-  const valid = subjectGrades.filter((g): g is number => g !== null)
-  if (valid.length === 0) return 50
-  const avg = valid.reduce((a, b) => a + b, 0) / valid.length
-  if (avg >= 75) return 90
-  if (avg >= 65) return 70
-  if (avg >= 55) return 50
-  return 25
-}
-
-function calcS3(student: Student, scores: BagrutScores, grades: SchoolGrades): number {
-  let mathUnitScore = 65
-  if (scores.math_35571 !== null || scores.math_35572 !== null) mathUnitScore = 100
-  else if (scores.math_35471 !== null || scores.math_35472 !== null) mathUnitScore = 90
-  else if (scores.math_35173 !== null || scores.math_35371 !== null || scores.math_35372 !== null) mathUnitScore = 60
-  else {
-    const mathUnits = student.mathUnits ?? grades.mathLevel
-    if (mathUnits === 5) mathUnitScore = 100
-    else if (mathUnits === 4) mathUnitScore = 90
-    else if (mathUnits === 3) mathUnitScore = 60
-  }
-
-  const engUnits = student.englishUnits ?? inferEnglishUnits(scores) ?? grades.englishLevel
-  let engUnitScore = 50
-  if (engUnits === 5) engUnitScore = 95
-  else if (engUnits === 4) engUnitScore = 80
-  else if (engUnits === 3) engUnitScore = 50
-
-  return (mathUnitScore + engUnitScore) / 2
-}
-
-function calcS4(absencePct: number | null): number {
-  if (absencePct === null) return 70
-  const presence = 100 - absencePct
-  if (presence >= 80) return 100
-  if (presence >= 75) return 85
-  if (presence >= 70) return 70
-  if (presence >= 65) return 50
-  return 25
-}
-
+// הציון מבוסס על ציוני בגרות בלבד. ציוני תעודה ונוכחות לא נכנסים לחישוב
 export function calculateProbability(
   student: Student,
   scores: BagrutScores,
-  grades: SchoolGrades
+  _grades: SchoolGrades
 ): ProbabilityResult {
-  const { s1, subjectProbs } = calcS1(student, scores, grades)
-  const s2 = calcS2(grades, scores)
-  const s3 = calcS3(student, scores, grades)
-  const s4 = calcS4(student.attendanceAbsencePct)
+  const { s1, subjectProbs } = calcS1(student, scores, NO_SCHOOL_GRADES(student.id))
 
-  const raw =
-    s1 * WEIGHTS.bagrutDone +
-    s2 * WEIGHTS.schoolGrades +
-    s3 * WEIGHTS.mathEnglishLevel +
-    s4 * WEIGHTS.attendance
-
-  const score = Math.min(100, Math.max(0, Math.round(raw * 10) / 10))
+  const score = Math.min(100, Math.max(0, Math.round(s1 * 10) / 10))
 
   let risk: RiskLevel
   if (score >= RISK_THRESHOLDS.veryHigh) risk = 'גבוה מאוד'
@@ -414,9 +347,9 @@ export function calculateProbability(
     subjectProbs,
     breakdown: {
       bagrutDone: Math.round(s1 * 10) / 10,
-      schoolGrades: Math.round(s2 * 10) / 10,
-      mathEnglishLevel: Math.round(s3 * 10) / 10,
-      attendance: Math.round(s4 * 10) / 10,
+      schoolGrades: 0,
+      mathEnglishLevel: 0,
+      attendance: 0,
     },
   }
 }
